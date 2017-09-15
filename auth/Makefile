@@ -1,11 +1,15 @@
 KUBECTL_GLAGS= --ignore-not-found=true
+SUBPROJECTS += database
 
-.PHONY: install uninstall
+.PHONY: install uninstall subprojs
+.DEFAULT: subprojs
 
-install:
-	kubectl create -f service.yaml
-	kubectl create -f statefulset.yaml
+install: subprojs
 
-uninstall:
-	kubectl delete $(KUBECTL_GLAGS) -f statefulset.yaml
-	kubectl delete $(KUBECTL_GLAGS) -f service.yaml
+uninstall: subprojs
+	
+subprojs:
+	@for proj in $(SUBPROJECTS); \
+        do \
+		$(MAKE) -C $$proj $(MAKECMDGOALS); \
+	done
