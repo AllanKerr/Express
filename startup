@@ -1,0 +1,5 @@
+#!/bin/bash
+
+minikube start --vm-driver=vmwarefusion
+
+eval $(minikube docker-env)
