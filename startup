@@ -1,5 +1,20 @@
 #!/bin/bash
 
-minikube start --vm-driver=vmwarefusion
+INTERVAL=5
 
+minikube start --vm-driver=vmwarefusion
 eval $(minikube docker-env)
+
+update_status(){ 
+	READY="$(docker ps -a | tail -n +2 | awk '$2 ~ /kube-addon-manager/ {print $2}')"
+}
+
+update_status
+while [[ -z "$READY" ]] ; do
+	echo "Install waiting on startup, trying again in $INTERVAL seconds."
+	sleep $INTERVAL	
+	update_status
+done 
+echo "Startup Finished."
+
+make -C "./gateway" install
