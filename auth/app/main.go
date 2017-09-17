@@ -1,15 +1,15 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
-
-	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	fmt.Printf("Run main")
-	router := mux.NewRouter()
-	log.Fatal(http.ListenAndServe(":"+"8080", router))
+
+	ds, err := NewCQLDatastore("cassandra-0.cassandra:9042", "default")
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to create CQL datastore.")
+	}
+	app := NewApp(ds)
+	app.Start(8080)
 }
