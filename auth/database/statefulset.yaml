@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: cassandra
-        image: gcr.io/google-samples/cassandra:v11
+        image: allankerr/authdb
         imagePullPolicy: Always
         ports:
         - containerPort: 7000

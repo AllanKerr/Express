@@ -1,0 +1,4 @@
+#!/bin/bash
+
+docker build -t authdb ./
+docker push allankerr/authdb
