@@ -4,6 +4,6 @@ func main() {
 
 	ds := NewCQLDatastoreRetry("cassandra-0.cassandra:9042", "default", 5)
 	app := NewApp(ds, true)
-	/*oauth2.NewHTTPController(app)*/
+	NewOAuth2Controller(app, "temp secret")
 	app.Start(8080)
 }
