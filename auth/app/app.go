@@ -1,4 +1,4 @@
-package core
+package main
 
 import (
 	"github.com/gorilla/mux"
@@ -16,17 +16,26 @@ func (app *App)GetDatastore() Datastore {
 	return app.datastore
 }
 
-func NewApp(ds Datastore) *App {
+func NewApp(ds Datastore, readinessProbe bool) *App {
 	if ds == nil {
 		logrus.Fatal("Attempted to create new app with nil datastore.");
 	}
 	app := new(App)
 	app.router = mux.NewRouter()
 	app.datastore = ds
+
+	if readinessProbe {
+		app.AddEndpoint("/monitor/readiness", false, app.readinessProbe)
+	}
 	return app
 }
 
-func (app *App)AddEndpoint(path string, internal bool, f func(http.ResponseWriter, *http.Request)) *mux.Route {
+func (app *App) readinessProbe(w http.ResponseWriter, req *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("ok"))
+}
+
+func (app *App) AddEndpoint(path string, internal bool, f func(http.ResponseWriter, *http.Request)) *mux.Route {
 
 	route := app.router.HandleFunc(path, f)
 	if internal {
