@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"github.com/gocql/gocql"
@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type CQLDatastore struct {
+type CQLDataStore struct {
 	session *gocql.Session
 }
 
@@ -15,14 +15,14 @@ func newCluster(host string, keyspace string) *gocql.ClusterConfig {
 	logrus.WithFields(logrus.Fields{
 		"host": host,
 		"keyspace" : keyspace,
-	}).Info("Creating new CQL datastore.")
+	}).Info("Creating new CQL session.")
 
 	cluster := gocql.NewCluster(host)
 	cluster.Keyspace = keyspace
 	return cluster
 }
 
-func NewCQLDatastoreRetry(host string, keyspace string, interval int) *CQLDatastore {
+func NewCQLDataStoreRetry(host string, keyspace string, interval int) *CQLDataStore {
 
     cluster := newCluster(host, keyspace)
 	session, err := cluster.CreateSession()
@@ -31,12 +31,12 @@ func NewCQLDatastoreRetry(host string, keyspace string, interval int) *CQLDatast
 		time.Sleep(time.Duration(interval) * time.Second)
 		session, err = cluster.CreateSession()
 	}
-	ds := new(CQLDatastore)
+	ds := new(CQLDataStore)
 	ds.session = session
 	return ds
 }
 
-func NewCQLDatastore(host string, keyspace string) (*CQLDatastore, error) {
+func NewCQLDataStore(host string, keyspace string) (*CQLDataStore, error) {
 
 	cluster := newCluster(host, keyspace)
 	session, err := cluster.CreateSession()
@@ -44,15 +44,15 @@ func NewCQLDatastore(host string, keyspace string) (*CQLDatastore, error) {
 		logrus.WithField("error", err).Fatal("Failed to create a new CQL datastore.")
 		return nil, err
 	}
-	ds := new(CQLDatastore)
+	ds := new(CQLDataStore)
 	ds.session = session
 	return ds, nil
 }
 
-func (ds CQLDatastore) GetSession() interface{} {
+func (ds CQLDataStore) GetSession() interface{} {
 	return ds.session
 }
 
-func (ds CQLDatastore) Close() {
+func (ds CQLDataStore) Close() {
 	ds.session.Close()
 }

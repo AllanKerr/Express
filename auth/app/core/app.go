@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"github.com/gorilla/mux"
@@ -8,15 +8,15 @@ import (
 )
 
 type App struct {
-	router *mux.Router
-	datastore Datastore
+	router    *mux.Router
+	datastore DataStore
 }
 
-func (app *App)GetDatastore() Datastore {
+func (app *App)GetDatastore() DataStore {
 	return app.datastore
 }
 
-func NewApp(ds Datastore, readinessProbe bool) *App {
+func NewApp(ds DataStore, readinessProbe bool) *App {
 	if ds == nil {
 		logrus.Fatal("Attempted to create new app with nil datastore.");
 	}

@@ -1,4 +1,4 @@
-package main
+package oauth2
 
 import (
 	"github.com/ory/fosite/compose"
@@ -7,14 +7,15 @@ import (
 	"crypto/rand"
 	"github.com/sirupsen/logrus"
 	"github.com/ory/fosite"
+	"app/core"
 )
 
-type OAuth2Controller struct {
-	adapter *DatastoreAdapter
+type HTTPController struct {
+	adapter *DataStoreAdapter
 	auth fosite.OAuth2Provider
 }
 
-func NewOAuth2Controller(app *App, secret string) *OAuth2Controller {
+func NewController(app *core.App, secret string) *HTTPController {
 
 	if app == nil {
 		logrus.Fatal("Attempted to create an http controller with a nil app.")
@@ -26,7 +27,7 @@ func NewOAuth2Controller(app *App, secret string) *OAuth2Controller {
 	config := newConfig()
 	secretBytes := oauth2Secret(secret)
 
-	ctrl := new(OAuth2Controller)
+	ctrl := new(HTTPController)
 	ctrl.adapter = NewDatastoreAdapter(app.GetDatastore())
 	ctrl.auth = compose.ComposeAllEnabled(config, ctrl.adapter, secretBytes, key)
 
