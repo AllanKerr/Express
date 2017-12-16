@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/spf13/cobra"
 	"cli/client"
+	"cli/admin"
 )
 
 var RootCmd = &cobra.Command{
@@ -11,6 +12,6 @@ var RootCmd = &cobra.Command{
 
 func main() {
 
-	RootCmd.AddCommand(client.ClientCmd)
+	RootCmd.AddCommand(client.ClientCmd, admin.AdminCmd)
 	RootCmd.Execute()
 }
