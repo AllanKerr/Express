@@ -8,15 +8,15 @@ import (
 )
 
 type Client struct {
-	Id            string   `bson:"_id" json:"client_id"`
-	Owner 		  string   `bson:"owner,omitempty" json:"owner"`
-	Secret        string   `bson:"-" json:"client_secret,omitempty"`
-	SecretHash    []byte   `bson:"secret_hash,omitempty" json:"-"`
-	RedirectURIs  []string `bson:"redirect_uris" json:"redirect_uris"`
-	GrantTypes    []string `bson:"grant_types" json:"grant_types"`
-	ResponseTypes []string `bson:"response_types" json:"response_types"`
-	Scopes        []string `bson:"scopes" json:"scopes"`
-	Public        bool     `bson:"public" json:"public"`
+	Id            string
+	Owner 		  string
+	Secret        string
+	SecretHash    []byte
+	RedirectUris  []string
+	GrantTypes    []string
+	ResponseTypes []string
+	Scopes        []string
+	Public        bool
 }
 
 func generateRandomBytes(n int) ([]byte, error) {
@@ -86,7 +86,7 @@ func (c *Client) IsPublic() bool {
 }
 
 func (c *Client) GetRedirectURIs() []string {
-	return c.RedirectURIs
+	return c.RedirectUris
 }
 
 func (c *Client) GetHashedSecret() []byte {
