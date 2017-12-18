@@ -21,6 +21,50 @@ func NewDatastoreAdapter(ds core.DataStore) *DataStoreAdapter {
 	return adapter
 }
 
+func (adapter *DataStoreAdapter) createSession(sig string, req fosite.Requester) error {
+
+	session, ok := adapter.ds.GetSession().(*gocql.Session)
+	if !ok {
+		return errors.New("unexpected session type")
+	}
+	ses, err := NewSession(sig, req)
+	if err != nil {
+		return fosite.ErrServerError
+	}
+
+	stmt, names := qb.Insert("default.sessions").
+		Columns("signature", "request_id", "requested_at", "client_id", "scopes", "granted_scopes", "form_data", "session_data").
+		ToCql()
+
+	q := gocqlx.Query(session.Query(stmt), names).BindStruct(ses)
+	if err := q.ExecRelease(); err != nil {
+		logrus.WithField("error", err).Error("insert failed")
+		return fosite.ErrServerError
+	}
+	return nil
+}
+
+func (adapter *DataStoreAdapter) getSession(sig string) (fosite.Requester, error) {
+
+	session, ok := adapter.ds.GetSession().(*gocql.Session)
+	if !ok {
+		return nil, errors.New("unexpected session type")
+	}
+	stmt, names := qb.Select("default.sessions").
+		Where(qb.Eq("signature")).
+		ToCql()
+
+	q := gocqlx.Query(session.Query(stmt), names).BindMap(qb.M{
+		"signature": sig,
+	})
+
+	var s Session
+	if err := gocqlx.Get(&s, q.Query); err != nil {
+		return nil, err
+	}
+	return &s, nil
+}
+
 func (adapter *DataStoreAdapter) GetClient(_ context.Context, id string) (fosite.Client, error) {
 
 	logrus.Info("GetClient")
@@ -41,21 +85,23 @@ func (adapter *DataStoreAdapter) GetClient(_ context.Context, id string) (fosite
 	if err := gocqlx.Get(&c, q.Query); err != nil {
 		return nil, err
 	}
+
+	for _, grant := range c.GrantTypes {
+		logrus.Info(grant)
+	}
 	return &c, nil
 }
 
 func (adapter *DataStoreAdapter) CreateAuthorizeCodeSession(ctx context.Context, code string, req fosite.Requester) error {
 
 	logrus.Info("CreateAuthorizeCodeSession")
-
-	return nil
+	return adapter.createSession(code, req)
 }
 
 func (adapter *DataStoreAdapter) GetAuthorizeCodeSession(ctx context.Context, code string, _ fosite.Session) (fosite.Requester, error) {
 
 	logrus.Info("GetAuthorizeCodeSession")
-
-	return nil, nil
+	return adapter.getSession(code)
 }
 
 func (adapter *DataStoreAdapter) DeleteAuthorizeCodeSession(ctx context.Context, code string) error {
@@ -68,15 +114,13 @@ func (adapter *DataStoreAdapter) DeleteAuthorizeCodeSession(ctx context.Context,
 func (adapter *DataStoreAdapter) CreateAccessTokenSession(ctx context.Context, signature string, req fosite.Requester) error {
 
 	logrus.Info("CreateAccessTokenSession")
-
-	return nil
+	return adapter.createSession(signature, req)
 }
 
 func (adapter *DataStoreAdapter) GetAccessTokenSession(ctx context.Context, signature string, _ fosite.Session) (fosite.Requester, error) {
 
 	logrus.Info("GetAccessTokenSession")
-
-	return nil, nil
+	return adapter.getSession(signature)
 }
 
 func (adapter *DataStoreAdapter) DeleteAccessTokenSession(ctx context.Context, signature string) error {
@@ -89,15 +133,13 @@ func (adapter *DataStoreAdapter) DeleteAccessTokenSession(ctx context.Context, s
 func (adapter *DataStoreAdapter) CreateRefreshTokenSession(ctx context.Context, signature string, req fosite.Requester) error {
 
 	logrus.Info("CreateRefreshTokenSession")
-
-	return nil
+	return adapter.createSession(signature, req)
 }
 
 func (adapter *DataStoreAdapter) GetRefreshTokenSession(ctx context.Context, signature string, _ fosite.Session) (fosite.Requester, error) {
 
 	logrus.Info("GetRefreshTokenSession")
-
-	return nil, nil
+	return adapter.getSession(signature)
 }
 
 func (adapter *DataStoreAdapter) DeleteRefreshTokenSession(ctx context.Context, signature string) error {
@@ -136,6 +178,25 @@ func (adapter *DataStoreAdapter) Authenticate(ctx context.Context, name string, 
 	return nil
 }
 
+func (adapter *DataStoreAdapter) CreateOpenIDConnectSession(ctx context.Context, authorizeCode string, req fosite.Requester) error {
+
+	logrus.Info("CreateOpenIDConnectSession")
+	return adapter.createSession(authorizeCode, req)
+}
+
+func (adapter *DataStoreAdapter) GetOpenIDConnectSession(ctx context.Context, authorizeCode string, requester fosite.Requester) (fosite.Requester, error) {
+
+	logrus.Info("GetOpenIDConnectSession")
+	return adapter.getSession(authorizeCode)
+}
+
+func (adapter *DataStoreAdapter) DeleteOpenIDConnectSession(ctx context.Context, authorizeCode string) error {
+
+	logrus.Info("DeleteOpenIDConnectSession")
+
+	return nil
+}
+
 func (ds *DataStoreAdapter) RevokeRefreshToken(ctx context.Context, requestID string) error {
 
 	logrus.Info("RevokeRefreshToken")
@@ -146,28 +207,6 @@ func (ds *DataStoreAdapter) RevokeRefreshToken(ctx context.Context, requestID st
 func (ds *DataStoreAdapter) RevokeAccessToken(ctx context.Context, requestID string) error {
 
 	logrus.Info("RevokeAccessToken")
-
-	return nil
-}
-
-
-func (adapter *DataStoreAdapter) CreateOpenIDConnectSession(ctx context.Context, authorizeCode string, requester fosite.Requester) error {
-
-	logrus.Info("CreateOpenIDConnectSession")
-
-	return nil
-}
-
-func (adapter *DataStoreAdapter) GetOpenIDConnectSession(ctx context.Context, authorizeCode string, requester fosite.Requester) (fosite.Requester, error) {
-
-	logrus.Info("GetOpenIDConnectSession")
-
-	return nil, nil
-}
-
-func (adapter *DataStoreAdapter) DeleteOpenIDConnectSession(ctx context.Context, authorizeCode string) error {
-
-	logrus.Info("DeleteOpenIDConnectSession")
 
 	return nil
 }
