@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+  name: hydra
+spec:
+  tls:
+  - hosts:
+    - oauth2.minikube.dev
+    secretName: hydra
+  - hosts:
+    - consent.minikube.dev
+    secretName: consent
+  rules:
+  - host: consent.minikube.dev
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: consent
+          servicePort: 3000
+  - host: oauth2.minikube.dev
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: hydra
+          servicePort: 4444

@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hydra-migrate
+spec:
+  template:
+    metadata:
+      name: hydra-migrate
+    spec:
+      containers:
+      - args:
+        - migrate
+        - sql
+        - postgres://hydra:secret@postgresd:5432/hydra?sslmode=disable
+        image: hydra
+        imagePullPolicy: IfNotPresent
+        name: hydra-migratke
+      restartPolicy: Never

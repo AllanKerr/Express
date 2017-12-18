@@ -4,17 +4,19 @@ SUBPROJECTS += database
 .PHONY: install uninstall subprojs
 .DEFAULT: subprojs
 
-install: build subprojs
-	kubectl create -f service.yaml
-	kubectl create -f deployment.yaml
+install:
+	kubectl create -f hydra-hydravolume-persistentvolumeclaim.yaml
+	kubectl create -f postgresd-service.yaml
+	kubectl create -f postgresd-deployment.yaml
+	kubectl create -f hydra-service.yaml
+	kubectl create -f hydra-deployment.yaml
 
-uninstall: subprojs
-	kubectl delete $(KUBECTL_GLAGS) -f service.yaml
-	kubectl delete $(KUBECTL_GLAGS) -f deployment.yaml
-
-build:
-	eval $(shell minikube docker-env)
-	docker build -t auth .
+uninstall:
+	kubectl delete $(KUBECTL_GLAGS) -f hydra-deployment.yaml
+	kubectl delete $(KUBECTL_GLAGS) -f hydra-service.yaml
+	kubectl delete $(KUBECTL_GLAGS) -f postgresd-deployment.yaml
+	kubectl delete $(KUBECTL_GLAGS) -f postgresd-service.yaml
+	kubectl delete $(KUBECTL_GLAGS) -f hydra-hydravolume-persistentvolumeclaim.yaml
 
 subprojs:
 	@for proj in $(SUBPROJECTS); \

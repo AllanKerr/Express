@@ -14,4 +14,8 @@ data:
             location /demo {
                 proxy_pass http://demo.demo:8080/;
             }
+
+            location / {
+                proxy_pass http://hydra:4444;
+            }
         }
