@@ -41,6 +41,8 @@ spec:
             secretKeyRef:
               name: hydra
               key: client.secret
+        - name: NODE_TLS_REJECT_UNAUTHORIZED
+          value: "0"
         ports:
         - containerPort: 3000
 

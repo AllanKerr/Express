@@ -16,10 +16,10 @@ kind: ConfigMap
 metadata:
   name: hydra
 data:
-  hydra.url: https://oauth2.minikube.dev
-  consent.url: https://consent.minikube.dev
+  hydra.url: https://192.168.34.194/hydra
+  consent.url: https://192.168.34.194/
   .hydra.yml: |
-    cluster_url: https://localhost:4444
+    cluster_url: https://192.168.34.194/hydra
     client_id: admin
     client_secret: demo-password
 ---
@@ -36,13 +36,15 @@ spec:
     spec:
       containers:
       - name: hydra
-        image: oryam/hydra:latest
+        image: oryd/hydra:latest
         env:
         - name: SYSTEM_SECRET
           valueFrom:
             secretKeyRef:
               name: hydra
               key: system.secret
+        - name: ISSUER
+          value: https://192.168.34.194/hydra
         - name: CONSENT_URL
           valueFrom:
             configMapKeyRef:
@@ -58,7 +60,12 @@ spec:
             secretKeyRef:
               name: hydra
               key: client
-        args:
+        - name: LOG_LEVEL
+          value: debug
+        - name: HTTPS_ALLOW_TERMINATION_FROM
+          value: 0.0.0.0/0
+        command:
+        - hydra
         - host
         - --dangerous-auto-logon
         - --disable-telemetry

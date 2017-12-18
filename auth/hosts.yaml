@@ -5,10 +5,10 @@ metadata:
 spec:
   restartPolicy: Never
   hostAliases:
-  - ip: "192.168.34.192"
+  - ip: "192.168.34.194"
     hostnames:
-    - "consent.minikube.dev"
-    - "oauth2.minikube.dev"
+    - "consent.minikube"
+    - "oauth2.minikube"
   containers:
   - name: cat-hosts
     image: busybox
