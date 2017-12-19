@@ -5,23 +5,19 @@ metadata:
     ingress.kubernetes.io/auth-signin: https://$host/oauth2/start
     ingress.kubernetes.io/auth-url: https://$host/oauth2/introspect
   name: external-auth-oauth2
-  namespace: kube-system
 spec:
   rules:
   - http:
       paths:
       - backend:
-          serviceName: kubernetes-dashboard
-          servicePort: 80
+          serviceName: demo
+          servicePort: 8080
         path: /
-
 ---
-
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: oauth2-proxy
-  namespace: kube-system
 spec:
   rules:
   - http:
