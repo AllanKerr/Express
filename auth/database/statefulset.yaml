@@ -10,9 +10,10 @@ apiVersion: "apps/v1beta1"
 kind: StatefulSet
 metadata:
   name: cassandra
+  namespace: kube-system
 spec:
   serviceName: cassandra
-  replicas: 3
+  replicas: 1
   template:
     metadata:
       labels:
@@ -97,6 +98,7 @@ kind: StorageClass
 apiVersion: storage.k8s.io/v1beta1
 metadata:
   name: fast
+  namespace: kube-system
 provisioner: k8s.io/minikube-hostpath
 parameters:
   type: pd-ssd

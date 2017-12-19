@@ -12,6 +12,7 @@ metadata:
   labels:
     app: cassandra
   name: cassandra
+  namespace: kube-system
 spec:
   clusterIP: None
   ports:

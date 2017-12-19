@@ -7,11 +7,23 @@ metadata:
 data:
   default.conf: |
 
+
         server {
             listen 80;
             charset utf-8;
 
             location /demo {
+                auth_reuest /auth;
+                set $scopes "discovery";
                 proxy_pass http://demo.demo:8080/;
+            }
+
+            location = /auth {
+                internal;
+                proxy_pass http://auth.default.svc.cluster.local:8080/oauth2/introspect;
+                proxy_pass_request_body off;
+                proxy_set_header Content-Length "";
+                proxy_set_header X-Original-URI $request_uri;
+                proxy_set_header Scopes $scopes;
             }
         }
