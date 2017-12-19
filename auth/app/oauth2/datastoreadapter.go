@@ -210,3 +210,22 @@ func (ds *DataStoreAdapter) RevokeAccessToken(ctx context.Context, requestID str
 
 	return nil
 }
+
+func (adapter *DataStoreAdapter) CreateUser(user *User) error {
+
+	session, ok := adapter.ds.GetSession().(*gocql.Session)
+	if !ok {
+		return errors.New("unexpected session type")
+	}
+
+	stmt, names := qb.Insert("default.users").
+		Columns("username", "password_hash", "role").
+		ToCql()
+
+	q := gocqlx.Query(session.Query(stmt), names).BindStruct(user)
+	if err := q.ExecRelease(); err != nil {
+		logrus.WithField("error", err).Fatal("failed to create user")
+		return err
+	}
+	return nil
+}

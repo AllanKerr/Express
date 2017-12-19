@@ -100,12 +100,12 @@ func (s *Session) GetSession() fosite.Session {
 	if s.SessionData == nil {
 		return nil
 	}
-	var session fosite.Session
-	err := json.Unmarshal(s.SessionData, session)
+	var session fosite.DefaultSession
+	err := json.Unmarshal(s.SessionData, &session)
 	if err != nil {
 		logrus.WithField("err", err).Error("session get session data un-marshall failed")
 	}
-	return session
+	return &session
 }
 
 func (s *Session) SetSession(session fosite.Session) {

@@ -2,7 +2,6 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   annotations:
-    ingress.kubernetes.io/auth-signin: https://$host/oauth2/login
     ingress.kubernetes.io/auth-url: https://$host/oauth2/introspect
   name: external-auth-oauth2
 spec:
@@ -25,8 +24,4 @@ spec:
       - backend:
           serviceName: auth
           servicePort: 8080
-        path: /oauth2/introspect
-      - backend:
-          serviceName: auth
-          servicePort: 8080
-        path: /oauth2/login
+        path: /oauth2

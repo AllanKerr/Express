@@ -4,18 +4,31 @@ import (
 	"net/http"
 	"html/template"
 	"fmt"
-	"os"
+	"net/url"
 )
 
 func (ctrl *HTTPController) Login(w http.ResponseWriter, req *http.Request) {
 
-	cwd, _ := os.Getwd()
-	fmt.Println("CWD: " + cwd)
-
-	t, err := template.ParseFiles("templates/welcome.html") //setp 1
+	t, err := template.ParseFiles("templates/login.html")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	t.Execute(w, "Hello World!") //step 2
+	t.Execute(w, nil)
+}
+
+func (ctrl *HTTPController) Submit(w http.ResponseWriter, req *http.Request) {
+
+	username := req.FormValue("username")
+	password := req.FormValue("password")
+
+	form := url.Values{}
+	form.Add("grant_type", "password")
+	form.Add("client_id", "wlYVsgnUibXbqMtK-f0aXgXJQiHdOucU47uGUg48Zx8=")
+	form.Add("client_secret", "EGWWqWWLXyRdOp3NowbPDj8YURwWPfWcGtEyD6cVk2s=")
+	form.Add("username", username)
+	form.Add("password", password)
+	req.PostForm = form
+
+	ctrl.Token(w, req)
 }

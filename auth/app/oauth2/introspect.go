@@ -10,6 +10,7 @@ import (
 func (ctrl *HTTPController) Introspect(w http.ResponseWriter, req *http.Request) {
 
 	logger := logrus.WithFields(logrus.Fields{"endpoint": "Introspect"})
+	session := new(fosite.DefaultSession)
 
 	var scopes []string
 	scopesHeader := req.Header.Get("Scopes")
@@ -19,7 +20,10 @@ func (ctrl *HTTPController) Introspect(w http.ResponseWriter, req *http.Request)
 		scopes = strings.Split(scopesHeader, " ")
 	}
 
-	ar, err := ctrl.auth.IntrospectToken(req.Context(), fosite.AccessTokenFromRequest(req), fosite.AccessToken, nil, scopes...)
+	token := fosite.AccessTokenFromRequest(req)
+	logrus.Info("TOKEN: " + token)
+
+	ar, err := ctrl.auth.IntrospectToken(req.Context(), token, fosite.AccessToken, session, scopes...)
 	if err != nil {
 		logger.WithField("err", err).Info("request unauthorized")
 		w.WriteHeader(http.StatusUnauthorized)
