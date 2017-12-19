@@ -35,6 +35,7 @@ func NewController(app *core.App, secret string) *HTTPController {
 	app.AddEndpoint("/oauth2/token", false, ctrl.Token)
 	app.AddEndpoint("/oauth2/introspect", false, ctrl.Introspect)
 	app.AddEndpoint("/oauth2/revoke", false, ctrl.Revoke)
+	app.AddEndpoint("/oauth2/login", false, ctrl.Login)
 
 	return ctrl
 }
