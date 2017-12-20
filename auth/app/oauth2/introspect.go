@@ -33,5 +33,9 @@ func (ctrl *HTTPController) Introspect(w http.ResponseWriter, req *http.Request)
 	// TODO Write user and scope data to the response writer to be forwarded to the internal service
 	logger.Info("user: " + ar.GetID())
 
+	w.Header().Add("UserID", ar.GetID())
+	w.Header().Add("UserRole", "admin")
+	w.Header().Add("Other", "not used")
+
 	w.WriteHeader(http.StatusOK)
 }

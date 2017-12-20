@@ -65,7 +65,7 @@ func NewRootClient(id string, secret string) (*Client, error) {
 		secret,
 		secretHash,
 		[]string{},
-		[]string{PASSWORD_GRANT},
+		[]string{PASSWORD_GRANT, CLIENT_CREDENTIALS_GRANT},
 		[]string{},
 		[]string{},
 		false,
