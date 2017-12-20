@@ -230,15 +230,61 @@ func (adapter *DataStoreAdapter) Authenticate(ctx context.Context, name string, 
 
 func (adapter *DataStoreAdapter) RevokeRefreshToken(ctx context.Context, requestID string) error {
 
-	logrus.Info("RevokeRefreshToken")
-
-	return nil
+	logrus.Debug("RevokeRefreshToken")
+	return adapter.revokeToken(requestID)
 }
 
 func (adapter *DataStoreAdapter) RevokeAccessToken(ctx context.Context, requestID string) error {
 
-	logrus.Info("RevokeAccessToken")
+	logrus.Debug("RevokeAccessToken")
+	return adapter.revokeToken(requestID)
+}
 
+func (adapter *DataStoreAdapter) revokeToken(requestID string) error {
+
+	session, ok := adapter.ds.GetSession().(*gocql.Session)
+	if !ok {
+		return errors.New("unexpected session type")
+	}
+
+	// Get the signatures for the tokens with requestID
+	stmt, names := qb.Select("default.sessions").
+		Columns("signature").
+		Where(qb.Eq("request_id")).
+		ToCql()
+
+	// Execute select request
+	q := gocqlx.Query(session.Query(stmt), names).BindMap(qb.M{
+		"request_id": requestID,
+	})
+	var sigs []string
+	if err := gocqlx.Select(&sigs, q.Query); err != nil {
+		logrus.Error(err)
+		return fosite.ErrServerError
+	}
+	q.Release()
+
+	// Check that there are tokens to return
+	if len(sigs) == 0 {
+		return nil
+	}
+
+	// Delete the tokens with the matching signatures
+	stmt, names = qb.Delete("default.sessions").
+		Where(qb.In("signature")).
+		ToCql()
+
+	// Execute delete request
+	q = gocqlx.Query(session.Query(stmt), names).BindMap(qb.M{
+		"signature": sigs,
+	})
+	if err := q.ExecRelease(); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error" :err,
+			"signatures" : sigs,
+		}).Error("failed to delete tokens")
+		return err
+	}
 	return nil
 }
 

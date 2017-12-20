@@ -2,7 +2,6 @@ package oauth2
 
 import (
 	"github.com/ory/fosite/compose"
-	"time"
 	"github.com/sirupsen/logrus"
 	"github.com/ory/fosite"
 	"app/core"
@@ -19,8 +18,8 @@ func NewController(app *core.App, secret string) *HTTPController {
 	if app == nil {
 		logrus.Fatal("Attempted to create an http controller with a nil app.")
 	}
-	config := newConfig()
-	secretBytes := oauth2Secret(secret)
+	config := &compose.Config{}
+	secretBytes := []byte(secret)
 
 	ctrl := new(HTTPController)
 	ctrl.adapter = NewDatastoreAdapter(app.GetDatastore())
@@ -34,11 +33,11 @@ func NewController(app *core.App, secret string) *HTTPController {
 			OpenIDConnectTokenStrategy: nil,
 		},
 		nil,
-		//compose.OAuth2ClientCredentialsGrantFactory,
-		//compose.OAuth2RefreshTokenGrantFactory,
+		compose.OAuth2ClientCredentialsGrantFactory,
+		compose.OAuth2RefreshTokenGrantFactory,
 		compose.OAuth2ResourceOwnerPasswordCredentialsFactory,
-		//compose.OAuth2TokenIntrospectionFactory,
-		//compose.OAuth2TokenRevocationFactory,
+		compose.OAuth2TokenIntrospectionFactory,
+		compose.OAuth2TokenRevocationFactory,
 	)
 
 	app.AddEndpoint("/oauth2/token", false, ctrl.Token)
@@ -65,14 +64,4 @@ func (ctrl *HTTPController)CreateRootClient(clientId string, clientSecret string
 	}
 	ctrl.adapter.CreateClient(client)
 	return nil
-}
-
-func newConfig() *compose.Config {
-	return &compose.Config {
-		AccessTokenLifespan: time.Minute * 30,
-	}
-}
-
-func oauth2Secret(secret string) []byte {
-	return []byte(secret);
 }
