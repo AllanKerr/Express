@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"fmt"
 	"net/url"
+	"os"
 )
 
 func (ctrl *HTTPController) Login(w http.ResponseWriter, req *http.Request) {
@@ -24,8 +25,8 @@ func (ctrl *HTTPController) Submit(w http.ResponseWriter, req *http.Request) {
 
 	form := url.Values{}
 	form.Add("grant_type", "password")
-	form.Add("client_id", "wlYVsgnUibXbqMtK-f0aXgXJQiHdOucU47uGUg48Zx8=")
-	form.Add("client_secret", "EGWWqWWLXyRdOp3NowbPDj8YURwWPfWcGtEyD6cVk2s=")
+	form.Add("client_id", os.Getenv("CLIENT_ID"))
+	form.Add("client_secret", os.Getenv("CLIENT_SECRET"))
 	form.Add("username", username)
 	form.Add("password", password)
 	req.PostForm = form

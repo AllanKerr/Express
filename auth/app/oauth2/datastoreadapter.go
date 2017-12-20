@@ -65,6 +65,25 @@ func (adapter *DataStoreAdapter) getSession(sig string) (fosite.Requester, error
 	return &s, nil
 }
 
+func (adapter *DataStoreAdapter) CreateClient(client *Client) error {
+
+	session, ok := adapter.ds.GetSession().(*gocql.Session)
+	if !ok {
+		return errors.New("unexpected session type")
+	}
+	stmt, names := qb.Insert("default.clients").
+		Columns("id", "secret_hash", "redirect_uris", "grant_types", "response_types", "scopes", "public").
+		ToCql()
+
+	// bind the new client to be inserted
+	q := gocqlx.Query(session.Query(stmt), names).BindStruct(client)
+	if err := q.ExecRelease(); err != nil {
+		logrus.WithField("error", err).Error("failed to insert client")
+		return err
+	}
+	return nil
+}
+
 func (adapter *DataStoreAdapter) GetClient(_ context.Context, id string) (fosite.Client, error) {
 
 	logrus.Info("GetClient")

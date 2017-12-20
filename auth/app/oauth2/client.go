@@ -52,6 +52,27 @@ func generateSecret() (string, []byte, error) {
 	return secret, secretHash, nil
 }
 
+func NewRootClient(id string, secret string) (*Client, error) {
+
+	secretHash, err := HashPassword(secret)
+	if err != nil {
+		logrus.WithField("error", err).Error("failed to hash client secret")
+		return nil, err
+	}
+	client := &Client{
+		id,
+		"root",
+		secret,
+		secretHash,
+		[]string{},
+		[]string{PASSWORD_GRANT},
+		[]string{},
+		[]string{},
+		false,
+	}
+	return client, nil
+}
+
 func NewClient(owner string, public bool) (*Client, error) {
 
 	id, err := generateClientId()
