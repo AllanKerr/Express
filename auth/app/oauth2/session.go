@@ -56,7 +56,9 @@ func (s *Session) GetRequestedAt() time.Time {
 }
 
 func (s *Session) GetClient() fosite.Client {
-	return nil
+	return &Client{
+		Id:s.ClientId,
+	}
 }
 
 func (s *Session) GetRequestedScopes() fosite.Arguments {

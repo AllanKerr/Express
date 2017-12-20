@@ -24,7 +24,15 @@ func (ctrl *HTTPController) Token(w http.ResponseWriter, req *http.Request) {
 		session.Username = accessRequest.GetRequestForm().Get("username")
 	}
 
+	// Grant requested scopes
+	for _, scope := range accessRequest.GetRequestedScopes() {
+		if fosite.HierarchicScopeStrategy(accessRequest.GetClient().GetScopes(), scope) {
+			accessRequest.GrantScope(scope)
+		}
+	}
+
 	response, err := ctrl.auth.NewAccessResponse(ctx, accessRequest)
+
 	if err != nil {
 		logger.Warning(err)
 		ctrl.auth.WriteAccessError(w, accessRequest, err)

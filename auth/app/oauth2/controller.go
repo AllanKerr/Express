@@ -34,10 +34,11 @@ func NewController(app *core.App, secret string) *HTTPController {
 			OpenIDConnectTokenStrategy: nil,
 		},
 		nil,
-		compose.OAuth2ClientCredentialsGrantFactory,
-		compose.OAuth2RefreshTokenGrantFactory,
+		//compose.OAuth2ClientCredentialsGrantFactory,
+		//compose.OAuth2RefreshTokenGrantFactory,
 		compose.OAuth2ResourceOwnerPasswordCredentialsFactory,
-		compose.OAuth2TokenIntrospectionFactory,
+		//compose.OAuth2TokenIntrospectionFactory,
+		//compose.OAuth2TokenRevocationFactory,
 	)
 
 	app.AddEndpoint("/oauth2/token", false, ctrl.Token)
