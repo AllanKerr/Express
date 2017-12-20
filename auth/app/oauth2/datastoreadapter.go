@@ -16,9 +16,9 @@ type DataStoreAdapter struct {
 	ds core.DataStore
 }
 
-const NO_TTL = time.Duration(0)
+const NoTtl = time.Duration(0)
 
-func NewDatastoreAdapter(ds core.DataStore) *DataStoreAdapter {
+func NewDataStoreAdapter(ds core.DataStore) *DataStoreAdapter {
 	adapter := new(DataStoreAdapter)
 	adapter.ds = ds
 	return adapter
@@ -27,7 +27,7 @@ func NewDatastoreAdapter(ds core.DataStore) *DataStoreAdapter {
 // createSession creates a new session record in the Cassandra database. To avoid revealing credentials
 // the form data is not persisted. The sig is the unique session identifier and the request consists
 // of the data to be persisted. To handle data that expires the ttl or time-to-live can be used. If the
-// data does not expire use NO_TTL. ttl must be non-negative.
+// data does not expire use NoTtl. ttl must be non-negative.
 //
 func (adapter *DataStoreAdapter) createSession(sig string, req fosite.Requester, ttl time.Duration) error {
 
@@ -52,13 +52,13 @@ func (adapter *DataStoreAdapter) createSession(sig string, req fosite.Requester,
 
 	cols := qb.Insert("default.sessions").
 		Columns("signature", "request_id", "requested_at", "client_id", "scopes", "granted_scopes", "session_data")
-	if ttl != NO_TTL {
+	if ttl != NoTtl {
 		cols = cols.TTL()
 	}
 	stmt, names := cols.ToCql()
 
 	q := gocqlx.Query(session.Query(stmt), names)
-	if ttl == NO_TTL {
+	if ttl == NoTtl {
 		q = q.BindStruct(ses)
 	} else {
 		q = q.BindStructMap(ses, qb.M{
@@ -151,7 +151,7 @@ func (adapter *DataStoreAdapter) GetClient(_ context.Context, id string) (fosite
 func (adapter *DataStoreAdapter) CreateAuthorizeCodeSession(ctx context.Context, code string, req fosite.Requester) error {
 
 	logrus.Info("CreateAuthorizeCodeSession")
-	return adapter.createSession(code, req, NO_TTL)
+	return adapter.createSession(code, req, NoTtl)
 }
 
 func (adapter *DataStoreAdapter) GetAuthorizeCodeSession(ctx context.Context, code string, _ fosite.Session) (fosite.Requester, error) {
@@ -190,7 +190,7 @@ func (adapter *DataStoreAdapter) DeleteAccessTokenSession(ctx context.Context, s
 func (adapter *DataStoreAdapter) CreateRefreshTokenSession(ctx context.Context, signature string, req fosite.Requester) error {
 
 	logrus.Info("CreateRefreshTokenSession")
-	return adapter.createSession(signature, req, NO_TTL)
+	return adapter.createSession(signature, req, NoTtl)
 }
 
 func (adapter *DataStoreAdapter) GetRefreshTokenSession(ctx context.Context, signature string, _ fosite.Session) (fosite.Requester, error) {

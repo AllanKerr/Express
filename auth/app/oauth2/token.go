@@ -32,7 +32,6 @@ func (ctrl *HTTPController) Token(w http.ResponseWriter, req *http.Request) {
 	}
 
 	response, err := ctrl.auth.NewAccessResponse(ctx, accessRequest)
-	logrus.Info("E:" + err.Error())
 
 	if err != nil {
 		logger.Warning(err)

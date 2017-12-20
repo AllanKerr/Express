@@ -22,7 +22,7 @@ func NewController(app *core.App, secret string) *HTTPController {
 	secretBytes := []byte(secret)
 
 	ctrl := new(HTTPController)
-	ctrl.adapter = NewDatastoreAdapter(app.GetDatastore())
+	ctrl.adapter = NewDataStoreAdapter(app.GetDatastore())
 
 
 	ctrl.auth = compose.Compose(
