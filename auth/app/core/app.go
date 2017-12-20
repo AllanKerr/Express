@@ -16,10 +16,13 @@ func (app *App)GetDatastore() DataStore {
 	return app.datastore
 }
 
-func NewApp(ds DataStore, readinessProbe bool) *App {
+func NewApp(ds DataStore, readinessProbe bool, level logrus.Level) *App {
+
 	if ds == nil {
-		logrus.Fatal("Attempted to create new app with nil datastore.");
+		logrus.Fatal("Attempted to create new app with nil data store.");
 	}
+	logrus.SetLevel(level)
+
 	app := new(App)
 	app.router = mux.NewRouter()
 	app.datastore = ds

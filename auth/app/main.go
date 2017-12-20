@@ -17,7 +17,7 @@ func main() {
 	}
 
 	ds := core.NewCQLDataStoreRetry("cassandra-0.cassandra:9042", "default", 5)
-	app := core.NewApp(ds, true)
+	app := core.NewApp(ds, true, logrus.DebugLevel)
 
 	ctrl := oauth2.NewController(app, secret)
 

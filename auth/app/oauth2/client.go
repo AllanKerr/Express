@@ -67,7 +67,7 @@ func NewRootClient(id string, secret string) (*Client, error) {
 		[]string{},
 		[]string{PASSWORD_GRANT, CLIENT_CREDENTIALS_GRANT},
 		[]string{},
-		[]string{},
+		[]string{"offline"},
 		false,
 	}
 	return client, nil
@@ -130,7 +130,7 @@ func (c *Client) AppendGrant(grant string) {
 			logrus.WithFields(logrus.Fields{
 					"client_id": c.Id,
 					"grant_type":   grant,
-				},).Warning("attempted to add duplicate grant type")
+				},).Warning("attempted to add duplicate grant")
 			return
 		}
 	}

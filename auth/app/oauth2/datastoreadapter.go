@@ -23,6 +23,8 @@ func NewDatastoreAdapter(ds core.DataStore) *DataStoreAdapter {
 
 func (adapter *DataStoreAdapter) createSession(sig string, req fosite.Requester) error {
 
+
+
 	session, ok := adapter.ds.GetSession().(*gocql.Session)
 	if !ok {
 		return errors.New("unexpected session type")
@@ -33,7 +35,7 @@ func (adapter *DataStoreAdapter) createSession(sig string, req fosite.Requester)
 	}
 
 	stmt, names := qb.Insert("default.sessions").
-		Columns("signature", "request_id", "requested_at", "client_id", "scopes", "granted_scopes", "form_data", "session_data").
+		Columns("signature", "request_id", "requested_at", "client_id", "scopes", "granted_scopes", "session_data").
 		ToCql()
 
 	q := gocqlx.Query(session.Query(stmt), names).BindStruct(ses)
@@ -194,36 +196,18 @@ func (adapter *DataStoreAdapter) Authenticate(ctx context.Context, name string, 
 		logrus.Error(err)
 		return fosite.ErrRequestUnauthorized
 	}
-	return nil
-}
-
-func (adapter *DataStoreAdapter) CreateOpenIDConnectSession(ctx context.Context, authorizeCode string, req fosite.Requester) error {
-
-	logrus.Info("CreateOpenIDConnectSession")
-	return adapter.createSession(authorizeCode, req)
-}
-
-func (adapter *DataStoreAdapter) GetOpenIDConnectSession(ctx context.Context, authorizeCode string, requester fosite.Requester) (fosite.Requester, error) {
-
-	logrus.Info("GetOpenIDConnectSession")
-	return adapter.getSession(authorizeCode)
-}
-
-func (adapter *DataStoreAdapter) DeleteOpenIDConnectSession(ctx context.Context, authorizeCode string) error {
-
-	logrus.Info("DeleteOpenIDConnectSession")
 
 	return nil
 }
 
-func (ds *DataStoreAdapter) RevokeRefreshToken(ctx context.Context, requestID string) error {
+func (adapter *DataStoreAdapter) RevokeRefreshToken(ctx context.Context, requestID string) error {
 
 	logrus.Info("RevokeRefreshToken")
 
 	return nil
 }
 
-func (ds *DataStoreAdapter) RevokeAccessToken(ctx context.Context, requestID string) error {
+func (adapter *DataStoreAdapter) RevokeAccessToken(ctx context.Context, requestID string) error {
 
 	logrus.Info("RevokeAccessToken")
 
