@@ -89,7 +89,11 @@ func (adapter *DataStoreAdapter) getSession(sig string) (fosite.Requester, error
 
 	var s Session
 	if err := gocqlx.Get(&s, q.Query); err != nil {
-		return nil, err
+		if err == gocql.ErrNotFound {
+			return nil, fosite.ErrNotFound
+		} else {
+			return nil, err
+		}
 	}
 	return &s, nil
 }
@@ -131,7 +135,11 @@ func (adapter *DataStoreAdapter) GetClient(_ context.Context, id string) (fosite
 
 	var c Client
 	if err := gocqlx.Get(&c, q.Query); err != nil {
-		return nil, err
+		if err == gocql.ErrNotFound {
+			return nil, fosite.ErrNotFound
+		} else {
+			return nil, err
+		}
 	}
 
 	for _, grant := range c.GrantTypes {
