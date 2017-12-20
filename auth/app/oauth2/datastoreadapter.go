@@ -12,16 +12,28 @@ import (
 	"time"
 )
 
+const NoTtl time.Duration = time.Duration(0)
+
 type DataStoreAdapter struct {
 	ds core.DataStore
 }
-
-const NoTtl = time.Duration(0)
 
 func NewDataStoreAdapter(ds core.DataStore) *DataStoreAdapter {
 	adapter := new(DataStoreAdapter)
 	adapter.ds = ds
 	return adapter
+}
+
+// getCqlSession gets the data store's session and interprets it
+// as a CQL session. This is forced and is fatal if the session
+// is not a CQL session.
+//
+func (adapter *DataStoreAdapter) getCqlSession() (*gocql.Session) {
+	session, ok := adapter.ds.GetSession().(*gocql.Session)
+	if !ok {
+		logrus.Fatal("unexpected session type when getting CQL session")
+	}
+	return session
 }
 
 // createSession creates a new session record in the Cassandra database. To avoid revealing credentials
@@ -36,11 +48,7 @@ func (adapter *DataStoreAdapter) createSession(sig string, req fosite.Requester,
 		"ttl":ttl,
 	}).Debug("creating session")
 
-	session, ok := adapter.ds.GetSession().(*gocql.Session)
-	if !ok {
-		return errors.New("unexpected session type")
-	}
-
+	session := adapter.getCqlSession()
 	ses, err := NewSession(sig, req)
 	if err != nil {
 		return fosite.ErrServerError
@@ -75,10 +83,8 @@ func (adapter *DataStoreAdapter) createSession(sig string, req fosite.Requester,
 
 func (adapter *DataStoreAdapter) getSession(sig string) (fosite.Requester, error) {
 
-	session, ok := adapter.ds.GetSession().(*gocql.Session)
-	if !ok {
-		return nil, errors.New("unexpected session type")
-	}
+	session := adapter.getCqlSession()
+
 	stmt, names := qb.Select("default.sessions").
 		Where(qb.Eq("signature")).
 		ToCql()
@@ -100,10 +106,7 @@ func (adapter *DataStoreAdapter) getSession(sig string) (fosite.Requester, error
 
 func (adapter *DataStoreAdapter) deleteSession(sig string) error {
 
-	session, ok := adapter.ds.GetSession().(*gocql.Session)
-	if !ok {
-		return errors.New("unexpected session type")
-	}
+	session := adapter.getCqlSession()
 
 	// Delete the tokens with the matching signatures
 	stmt, names := qb.Delete("default.sessions").
@@ -126,10 +129,8 @@ func (adapter *DataStoreAdapter) deleteSession(sig string) error {
 
 func (adapter *DataStoreAdapter) CreateClient(client *Client) error {
 
-	session, ok := adapter.ds.GetSession().(*gocql.Session)
-	if !ok {
-		return errors.New("unexpected session type")
-	}
+	session := adapter.getCqlSession()
+
 	stmt, names := qb.Insert("default.clients").
 		Columns("id", "secret_hash", "redirect_uris", "grant_types", "response_types", "scopes", "public").
 		ToCql()
@@ -147,10 +148,8 @@ func (adapter *DataStoreAdapter) GetClient(_ context.Context, id string) (fosite
 
 	logrus.Info("GetClient")
 
-	session, ok := adapter.ds.GetSession().(*gocql.Session)
-	if !ok {
-		return nil, errors.New("unexpected session type")
-	}
+	session := adapter.getCqlSession()
+
 	stmt, names := qb.Select("default.clients").
 		Where(qb.Eq("id")).
 		ToCql()
@@ -233,10 +232,8 @@ func (adapter *DataStoreAdapter) Authenticate(ctx context.Context, name string, 
 
 	logrus.Info("Authenticate")
 
-	session, ok := adapter.ds.GetSession().(*gocql.Session)
-	if !ok {
-		return errors.New("unexpected session type")
-	}
+	session := adapter.getCqlSession()
+
 	stmt, names := qb.Select("default.users").
 		Where(qb.Eq("username")).
 		ToCql()
@@ -273,10 +270,7 @@ func (adapter *DataStoreAdapter) RevokeAccessToken(ctx context.Context, requestI
 
 func (adapter *DataStoreAdapter) revokeToken(requestID string) error {
 
-	session, ok := adapter.ds.GetSession().(*gocql.Session)
-	if !ok {
-		return errors.New("unexpected session type")
-	}
+	session := adapter.getCqlSession()
 
 	// Get the signatures for the tokens with requestID
 	stmt, names := qb.Select("default.sessions").
@@ -321,10 +315,8 @@ func (adapter *DataStoreAdapter) revokeToken(requestID string) error {
 
 func (adapter *DataStoreAdapter) CreateUser(user *User) error {
 
-	session, ok := adapter.ds.GetSession().(*gocql.Session)
-	if !ok {
-		return errors.New("unexpected session type")
-	}
+	session := adapter.getCqlSession()
+
 
 	stmt, names := qb.Insert("default.users").
 		Columns("username", "password_hash", "role").
