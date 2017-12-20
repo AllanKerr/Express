@@ -98,6 +98,32 @@ func (adapter *DataStoreAdapter) getSession(sig string) (fosite.Requester, error
 	return &s, nil
 }
 
+func (adapter *DataStoreAdapter) deleteSession(sig string) error {
+
+	session, ok := adapter.ds.GetSession().(*gocql.Session)
+	if !ok {
+		return errors.New("unexpected session type")
+	}
+
+	// Delete the tokens with the matching signatures
+	stmt, names := qb.Delete("default.sessions").
+		Where(qb.Eq("signature")).
+		ToCql()
+
+	// Execute delete request
+	q := gocqlx.Query(session.Query(stmt), names).BindMap(qb.M{
+		"signature": sig,
+	})
+	if err := q.ExecRelease(); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error" :err,
+			"signature" : sig,
+		}).Error("failed to delete session")
+		return err
+	}
+	return nil
+}
+
 func (adapter *DataStoreAdapter) CreateClient(client *Client) error {
 
 	session, ok := adapter.ds.GetSession().(*gocql.Session)
@@ -163,8 +189,7 @@ func (adapter *DataStoreAdapter) GetAuthorizeCodeSession(ctx context.Context, co
 func (adapter *DataStoreAdapter) DeleteAuthorizeCodeSession(ctx context.Context, code string) error {
 
 	logrus.Info("DeleteAuthorizeCodeSession")
-
-	return nil
+	return adapter.deleteSession(code)
 }
 
 func (adapter *DataStoreAdapter) CreateAccessTokenSession(ctx context.Context, signature string, req fosite.Requester) error {
@@ -183,8 +208,7 @@ func (adapter *DataStoreAdapter) GetAccessTokenSession(ctx context.Context, sign
 func (adapter *DataStoreAdapter) DeleteAccessTokenSession(ctx context.Context, signature string) error {
 
 	logrus.Info("DeleteAccessTokenSession")
-
-	return nil
+	return adapter.deleteSession(signature)
 }
 
 func (adapter *DataStoreAdapter) CreateRefreshTokenSession(ctx context.Context, signature string, req fosite.Requester) error {
@@ -202,8 +226,7 @@ func (adapter *DataStoreAdapter) GetRefreshTokenSession(ctx context.Context, sig
 func (adapter *DataStoreAdapter) DeleteRefreshTokenSession(ctx context.Context, signature string) error {
 
 	logrus.Info("DeleteRefreshTokenSession")
-
-	return nil
+	return adapter.deleteSession(signature)
 }
 
 func (adapter *DataStoreAdapter) Authenticate(ctx context.Context, name string, secret string) error {
