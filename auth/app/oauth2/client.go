@@ -2,7 +2,6 @@ package oauth2
 
 import (
 	"crypto/rand"
-	"encoding/base64"
 	"github.com/sirupsen/logrus"
 	"github.com/ory/fosite"
 	"golang.org/x/crypto/bcrypt"
@@ -10,7 +9,6 @@ import (
 
 type Client struct {
 	Id            string
-	Owner 		  string
 	Secret        string
 	SecretHash    []byte
 	RedirectUris  []string
@@ -26,77 +24,19 @@ func generateRandomBytes(n int) ([]byte, error) {
 	return b, err
 }
 
-// GenerateRandomString returns a URL-safe, base64 encoded
-// securely generated random string.
-func generateRandomString(s int) (string, error) {
-	b, err := generateRandomBytes(s)
-	return base64.URLEncoding.EncodeToString(b), err
-}
+func NewClient(id string, secret string, public bool) *Client {
 
-func generateClientId() (string, error) {
-	return generateRandomString(32)
-}
-
-func generateSecret() (string, []byte, error) {
-
-	secret, err := generateRandomString(32)
-	if err != nil {
-		logrus.Error(err)
-		return "", nil, err
-	}
-	secretHash, err := HashPassword(secret)
-	if err != nil {
-		logrus.Error(err)
-		return "", nil, err
-	}
-	return secret, secretHash, nil
-}
-
-func NewRootClient(id string, secret string) (*Client, error) {
-
-	secretHash, err := HashPassword(secret)
-	if err != nil {
-		logrus.WithField("error", err).Error("failed to hash client secret")
-		return nil, err
-	}
 	client := &Client{
 		id,
-		"root",
 		secret,
-		secretHash,
+		nil,
 		[]string{},
 		[]string{PASSWORD_GRANT, CLIENT_CREDENTIALS_GRANT, REFRESH_TOKEN_GRANT},
 		[]string{},
 		[]string{"offline"},
-		false,
-	}
-	return client, nil
-}
-
-func NewClient(owner string, public bool) (*Client, error) {
-
-	id, err := generateClientId()
-	if err != nil {
-		logrus.Error(err)
-		return nil, err
-	}
-	secret, secretHash, err := generateSecret()
-	if err != nil {
-		logrus.Error(err)
-		return nil, err
-	}
-	client := &Client{
-		id,
-		owner,
-		secret,
-		secretHash,
-		[]string{},
-		[]string{},
-		[]string{},
-		[]string{},
 		public,
 	}
-	return client, err
+	return client
 }
 
 func (c *Client) GetID() string {
@@ -117,6 +57,19 @@ func (c *Client) GetHashedSecret() []byte {
 
 func (c *Client) GetScopes() fosite.Arguments {
 	return c.Scopes
+}
+
+func (c *Client) AppendScope(scope string) {
+	for _, cur := range c.Scopes {
+		if cur == scope {
+			logrus.WithFields(logrus.Fields{
+				"client_id": c.Id,
+				"scope":   scope,
+			},).Warning("attempted to add duplicate scope")
+			return
+		}
+	}
+	c.Scopes = append(c.Scopes, scope)
 }
 
 func (c *Client) GetGrantTypes() fosite.Arguments {

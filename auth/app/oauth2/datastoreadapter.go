@@ -19,15 +19,17 @@ const NoTtl = time.Duration(0)
 // required by fosite and the Cassandra data store
 type DataStoreAdapter struct {
 	ds core.DataStore
+	hasher fosite.Hasher
 }
 
 // Create a new data store adapter to map between
 // the fosite persistence operations and the data store ds.
 // ds must be a Cassandra data store.
-func NewDataStoreAdapter(ds core.DataStore) *DataStoreAdapter {
-	adapter := new(DataStoreAdapter)
-	adapter.ds = ds
-	return adapter
+func NewDataStoreAdapter(ds core.DataStore, hasher fosite.Hasher) *DataStoreAdapter {
+	return &DataStoreAdapter{
+		ds,
+		hasher,
+	}
 }
 
 // getCqlSession gets the data store's session and interprets it
@@ -157,6 +159,16 @@ func (adapter *DataStoreAdapter) CreateClient(client *Client) error {
 
 	session := adapter.getCqlSession()
 
+	// Compute the secret hash if it doesn't already exist
+	if client.SecretHash == nil {
+		hash, err  := adapter.hasher.Hash([]byte(client.Secret))
+		if err != nil {
+			logrus.WithField("error", err).Error("failed to hash client secret")
+			return errors.WithStack(err)
+		}
+		client.SecretHash = hash
+	}
+
 	// build the insert client query
 	stmt, names := qb.Insert("default.clients").
 		Columns("id", "secret_hash", "redirect_uris", "grant_types", "response_types", "scopes", "public").
@@ -198,6 +210,24 @@ func (adapter *DataStoreAdapter) GetClient(_ context.Context, id string) (fosite
 		return nil, errors.WithStack(err)
 	}
 	return &c, nil
+}
+
+// update a specific column for an existing client
+func (adapter *DataStoreAdapter) UpdateClient(client *Client, column string) error {
+
+	session := adapter.getCqlSession()
+
+	stmt, names := qb.Update("default.clients").
+		Set(column).
+		Where(qb.Eq("id")).
+		ToCql()
+
+	q := gocqlx.Query(session.Query(stmt), names).BindStruct(client)
+	if err := q.ExecRelease(); err != nil {
+		logrus.WithField("error", err).Error("failed to update client")
+		return errors.WithStack(err)
+	}
+	return nil
 }
 
 // create a new access token session in the data store

@@ -5,7 +5,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/ory/fosite"
 	"app/core"
-	"errors"
 )
 
 type HTTPController struct {
@@ -21,7 +20,7 @@ func NewController(app *core.App, config *Config) *HTTPController {
 	}
 
 	ctrl := new(HTTPController)
-	ctrl.adapter = NewDataStoreAdapter(app.GetDatastore())
+	ctrl.adapter = NewDataStoreAdapter(app.GetDatastore(), config.GetHasher())
 
 	ctrl.auth = compose.Compose(
 		config.GetAuthConfig(),
@@ -45,21 +44,4 @@ func NewController(app *core.App, config *Config) *HTTPController {
 	app.AddEndpoint("/oauth2/login", false, ctrl.Submit).Methods("POST")
 
 	return ctrl
-}
-
-func (ctrl *HTTPController)CreateRootClient(clientId string, clientSecret string) error {
-
-	if clientId == "" {
-		return errors.New("missing root client id")
-	}
-	if clientSecret == "" {
-		return errors.New("missing root client secret")
-	}
-	client, err := NewRootClient(clientId, clientSecret)
-	if err != nil {
-		logrus.WithField("error", err).Error("failed to create new root client")
-		return err
-	}
-	ctrl.adapter.CreateClient(client)
-	return nil
 }

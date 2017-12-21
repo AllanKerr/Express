@@ -40,14 +40,14 @@ func (c *Config) GetHasher() fosite.Hasher {
 
 	authConfig := c.GetAuthConfig()
 	if c.hasher == nil {
-		return &fosite.BCrypt{WorkFactor: authConfig.GetHashCost()}
+		c.hasher = &fosite.BCrypt{WorkFactor: authConfig.GetHashCost()}
 	}
 	return c.hasher
 }
 
 func (c *Config) GetAuthConfig() *compose.Config {
 	if c.authConfig == nil {
-		return &compose.Config{}
+		c.authConfig = &compose.Config{}
 	}
 	return c.authConfig
 }
