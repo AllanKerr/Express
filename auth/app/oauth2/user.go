@@ -39,7 +39,7 @@ func NewUser(username string, password string) (*DefaultUser, error) {
 
 	return &DefaultUser{
 		username,
-		password,
+		nil,
 		nil,
 	}, nil
 }

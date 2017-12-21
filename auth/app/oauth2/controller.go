@@ -14,29 +14,26 @@ type HTTPController struct {
 	hasher fosite.Hasher
 }
 
-func NewController(app *core.App, secret string) *HTTPController {
+func NewController(app *core.App, config *Config) *HTTPController {
 
 	if app == nil {
 		logrus.Fatal("Attempted to create an http controller with a nil app.")
 	}
-	config := &compose.Config{}
-	hasher := &fosite.BCrypt{WorkFactor: config.GetHashCost()}
-	secretBytes := []byte(secret)
 
 	ctrl := new(HTTPController)
 	ctrl.adapter = NewDataStoreAdapter(app.GetDatastore())
 
 	ctrl.auth = compose.Compose(
-		config,
+		config.GetAuthConfig(),
 		ctrl.adapter,
 		&compose.CommonStrategy{
-			CoreStrategy: compose.NewOAuth2HMACStrategy(config, secretBytes),
+			CoreStrategy: compose.NewOAuth2HMACStrategy(config.GetAuthConfig(), config.GetSystemSecret()),
 			OpenIDConnectTokenStrategy: nil,
 		},
-		hasher,
+		config.GetHasher(),
 		compose.OAuth2ClientCredentialsGrantFactory,
 		compose.OAuth2RefreshTokenGrantFactory,
-		OAuth2ResourceOwnerPasswordCredentialsFactory(hasher),
+		OAuth2ResourceOwnerPasswordCredentialsFactory(config.GetHasher()),
 		compose.OAuth2TokenIntrospectionFactory,
 		compose.OAuth2TokenRevocationFactory,
 	)

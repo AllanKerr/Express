@@ -29,6 +29,9 @@ spec:
             containers:
             - name: auth
               image: auth
+              command:
+              - app
+              - host
               env:
               - name: SYSTEM_SECRET
                 valueFrom:

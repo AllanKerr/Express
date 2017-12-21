@@ -31,7 +31,7 @@ var cmdCreate = &cobra.Command{
 
 		// create insert query
 		stmt, names := qb.Insert("default.users").
-			Columns("username", "password_hash", "role").
+			Columns("username", "password_hash").
 			ToCql()
 
 		// bind the new client to be inserted
