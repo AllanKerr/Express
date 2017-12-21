@@ -354,7 +354,6 @@ func (adapter *DataStoreAdapter) CreateUser(user *User) error {
 		Columns("username", "password_hash", "role").
 		ToCql()
 	q := gocqlx.Query(session.Query(stmt), names).BindStruct(user)
-	defer q.Release()
 
 	// insert the user
 	if err := q.ExecRelease(); err != nil {
