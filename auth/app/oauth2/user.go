@@ -1,7 +1,6 @@
 package oauth2
 
 import (
-	"golang.org/x/crypto/bcrypt"
 	"github.com/ory/fosite"
 	"github.com/sirupsen/logrus"
 )
@@ -15,6 +14,8 @@ type User interface {
 
 	// Returns the scopes this client is allowed to request.
 	GetScopes() fosite.Arguments
+
+	AppendScope(scope string)
 }
 
 type DefaultUser struct {
@@ -56,8 +57,4 @@ func NewUser(username string, password string) *DefaultUser {
 		nil,
 		[]string{"offline", "user"},
 	}
-}
-
-func (user *DefaultUser) VerifyPassword(password string) error {
-	return bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(password))
 }

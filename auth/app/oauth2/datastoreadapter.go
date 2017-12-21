@@ -400,6 +400,24 @@ func (adapter *DataStoreAdapter) CreateUser(user *DefaultUser) error {
 	return nil
 }
 
+// update a specific column for an existing user
+func (adapter *DataStoreAdapter) UpdateUser(user User, column string) error {
+
+	session := adapter.getCqlSession()
+
+	stmt, names := qb.Update("default.users").
+		Set(column).
+		Where(qb.Eq("username")).
+		ToCql()
+
+	q := gocqlx.Query(session.Query(stmt), names).BindStruct(user)
+	if err := q.ExecRelease(); err != nil {
+		logrus.WithField("error", err).Error("failed to update user")
+		return errors.WithStack(err)
+	}
+	return nil
+}
+
 // unsupported authorization grant operation
 func (adapter *DataStoreAdapter) CreateAuthorizeCodeSession(ctx context.Context, code string, req fosite.Requester) error {
 
