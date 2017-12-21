@@ -7,17 +7,23 @@ import (
 	"github.com/scylladb/gocqlx"
 	"github.com/scylladb/gocqlx/qb"
 	"github.com/gocql/gocql"
-	"errors"
 	"github.com/sirupsen/logrus"
 	"time"
+	"github.com/pkg/errors"
 )
 
-const NoTtl time.Duration = time.Duration(0)
+// used to indicate sessions with no expiry time-to-live
+const NoTtl = time.Duration(0)
 
+// DataStoreAdapter handles mapping between the persistence operations
+// required by fosite and the Cassandra data store
 type DataStoreAdapter struct {
 	ds core.DataStore
 }
 
+// Create a new data store adapter to map between
+// the fosite persistence operations and the data store ds.
+// ds must be a Cassandra data store.
 func NewDataStoreAdapter(ds core.DataStore) *DataStoreAdapter {
 	adapter := new(DataStoreAdapter)
 	adapter.ds = ds
@@ -48,258 +54,277 @@ func (adapter *DataStoreAdapter) createSession(sig string, req fosite.Requester,
 		"ttl":ttl,
 	}).Debug("creating session")
 
-	session := adapter.getCqlSession()
+	// create a new session struct for the requester
 	ses, err := NewSession(sig, req)
 	if err != nil {
-		return fosite.ErrServerError
+		logrus.WithField("error", err).Error("failed to create new session")
+		return errors.WithStack(fosite.ErrServerError)
 	}
+	// check the time-to-live is non-negative
 	if ttl < 0 {
-		logrus.Error("attempted to create session with invalid ttl: " + ttl.String())
-		return fosite.ErrServerError
+		logrus.WithField("ttl",ttl).Error("attempted to create session with invalid ttl")
+		return errors.WithStack(fosite.ErrServerError)
 	}
 
+	session := adapter.getCqlSession()
+
+	// build the insert request to insert the session data
 	cols := qb.Insert("default.sessions").
 		Columns("signature", "request_id", "requested_at", "client_id", "scopes", "granted_scopes", "session_data")
 	if ttl != NoTtl {
 		cols = cols.TTL()
 	}
 	stmt, names := cols.ToCql()
-
 	q := gocqlx.Query(session.Query(stmt), names)
 	if ttl == NoTtl {
 		q = q.BindStruct(ses)
 	} else {
+		// bind the ttl if it was provided
 		q = q.BindStructMap(ses, qb.M{
 			"_ttl": qb.TTL(ttl),
 		})
 	}
-	logrus.Debug("query: " + q.String())
+
+	// insert the session data into the data store
 	if err := q.ExecRelease(); err != nil {
-		logrus.WithField("error", err).Error("insert failed")
-		return fosite.ErrServerError
+		logrus.WithField("error", err).Error("failed to insert session")
+		return errors.WithStack(fosite.ErrServerError)
 	}
 	return nil
 }
 
+// gets a session with the specified signature from the Cassandra data store
+// If no session is found then ErrNotFound is returned
 func (adapter *DataStoreAdapter) getSession(sig string) (fosite.Requester, error) {
+
+	logrus.WithField("signature",sig).Debug("getting session")
 
 	session := adapter.getCqlSession()
 
+	// build the select query to get the session
 	stmt, names := qb.Select("default.sessions").
 		Where(qb.Eq("signature")).
 		ToCql()
-
 	q := gocqlx.Query(session.Query(stmt), names).BindMap(qb.M{
 		"signature": sig,
 	})
+	defer q.Release()
 
+	// get the specified session
 	var s Session
 	if err := gocqlx.Get(&s, q.Query); err != nil {
 		if err == gocql.ErrNotFound {
-			return nil, fosite.ErrNotFound
+			err = fosite.ErrNotFound
 		} else {
-			return nil, err
+			logrus.WithField("error", err).Error("failed to get session")
 		}
+		return nil, errors.WithStack(err)
 	}
 	return &s, nil
 }
 
+// delete the session with the specified signature from the Cassandra data store
 func (adapter *DataStoreAdapter) deleteSession(sig string) error {
+
+	logrus.WithField("signature",sig).Debug("deleting session")
 
 	session := adapter.getCqlSession()
 
-	// Delete the tokens with the matching signatures
+	// build the delete query for the tokens with the matching signature
 	stmt, names := qb.Delete("default.sessions").
 		Where(qb.Eq("signature")).
 		ToCql()
-
-	// Execute delete request
 	q := gocqlx.Query(session.Query(stmt), names).BindMap(qb.M{
 		"signature": sig,
 	})
+
+	// delete the matching session
 	if err := q.ExecRelease(); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"error" :err,
-			"signature" : sig,
-		}).Error("failed to delete session")
-		return err
+		logrus.WithField("error", err).Error("failed to delete session")
+		return errors.WithStack(err)
 	}
 	return nil
 }
 
+// create a new client in the data store
+// client must be non-nil
 func (adapter *DataStoreAdapter) CreateClient(client *Client) error {
+
+	logrus.WithField("client", client.Id).Debug("create client")
+	if client == nil {
+		return fosite.ErrInvalidRequest.WithDebug("attempted to create a nil client")
+	}
 
 	session := adapter.getCqlSession()
 
+	// build the insert client query
 	stmt, names := qb.Insert("default.clients").
 		Columns("id", "secret_hash", "redirect_uris", "grant_types", "response_types", "scopes", "public").
 		ToCql()
-
-	// bind the new client to be inserted
 	q := gocqlx.Query(session.Query(stmt), names).BindStruct(client)
+
+	// insert the new client
 	if err := q.ExecRelease(); err != nil {
 		logrus.WithField("error", err).Error("failed to insert client")
-		return err
+		return  errors.WithStack(err)
 	}
 	return nil
 }
 
+// get an existing client from the data store using its client id
 func (adapter *DataStoreAdapter) GetClient(_ context.Context, id string) (fosite.Client, error) {
 
-	logrus.Info("GetClient")
+	logrus.WithField("client", id).Debug("get client")
 
 	session := adapter.getCqlSession()
 
+	// build the select query to get the client with its id
 	stmt, names := qb.Select("default.clients").
 		Where(qb.Eq("id")).
 		ToCql()
-
 	q := gocqlx.Query(session.Query(stmt), names).BindMap(qb.M{
 		"id": id,
 	})
+	defer q.Release()
 
+	// get the client from the data store
 	var c Client
 	if err := gocqlx.Get(&c, q.Query); err != nil {
 		if err == gocql.ErrNotFound {
-			return nil, fosite.ErrNotFound
+			err = fosite.ErrNotFound
 		} else {
-			return nil, err
+			logrus.WithField("error", err).Error("failed to get client")
 		}
-	}
-
-	for _, grant := range c.GrantTypes {
-		logrus.Info(grant)
+		return nil, errors.WithStack(err)
 	}
 	return &c, nil
 }
 
-func (adapter *DataStoreAdapter) CreateAuthorizeCodeSession(ctx context.Context, code string, req fosite.Requester) error {
-
-	logrus.Info("CreateAuthorizeCodeSession")
-	return adapter.createSession(code, req, NoTtl)
-}
-
-func (adapter *DataStoreAdapter) GetAuthorizeCodeSession(ctx context.Context, code string, _ fosite.Session) (fosite.Requester, error) {
-
-	logrus.Info("GetAuthorizeCodeSession")
-	return adapter.getSession(code)
-}
-
-func (adapter *DataStoreAdapter) DeleteAuthorizeCodeSession(ctx context.Context, code string) error {
-
-	logrus.Info("DeleteAuthorizeCodeSession")
-	return adapter.deleteSession(code)
-}
-
+// create a new access token session in the data store
 func (adapter *DataStoreAdapter) CreateAccessTokenSession(ctx context.Context, signature string, req fosite.Requester) error {
 
-	logrus.Info("CreateAccessTokenSession: ")
+	logrus.Debug("create access token session")
 	ttl := req.GetSession().GetExpiresAt(fosite.AccessToken).Sub(time.Now().UTC())
 	return adapter.createSession(signature, req, ttl)
 }
 
+// get an access token session from the data store with the matching signature
 func (adapter *DataStoreAdapter) GetAccessTokenSession(ctx context.Context, signature string, _ fosite.Session) (fosite.Requester, error) {
 
-	logrus.Info("GetAccessTokenSession")
+	logrus.Debug("get access token session")
 	return adapter.getSession(signature)
 }
 
+// delete an access token session from the data store with the matching signature
 func (adapter *DataStoreAdapter) DeleteAccessTokenSession(ctx context.Context, signature string) error {
 
-	logrus.Info("DeleteAccessTokenSession")
+	logrus.Debug("delete access token session")
 	return adapter.deleteSession(signature)
 }
 
+// create a new refresh token session in the data store
 func (adapter *DataStoreAdapter) CreateRefreshTokenSession(ctx context.Context, signature string, req fosite.Requester) error {
 
-	logrus.Info("CreateRefreshTokenSession")
+	logrus.Debug("create refresh token session")
 	return adapter.createSession(signature, req, NoTtl)
 }
 
+// get a refresh token session from the data store with the matching signature
 func (adapter *DataStoreAdapter) GetRefreshTokenSession(ctx context.Context, signature string, _ fosite.Session) (fosite.Requester, error) {
 
-	logrus.Info("GetRefreshTokenSession")
+	logrus.Debug("get refresh token session")
 	return adapter.getSession(signature)
 }
 
+// delete a refresh token session from the data store with the matching signature
 func (adapter *DataStoreAdapter) DeleteRefreshTokenSession(ctx context.Context, signature string) error {
 
-	logrus.Info("DeleteRefreshTokenSession")
+	logrus.Debug("delete refresh token session")
 	return adapter.deleteSession(signature)
 }
 
+// authenticate a user with the provided username and secret password
+// if the authentication succeeds nil is returned
 func (adapter *DataStoreAdapter) Authenticate(ctx context.Context, name string, secret string) error {
 
-	logrus.Info("Authenticate")
+	logrus.WithField("name", name).Debug("authenticate")
 
 	session := adapter.getCqlSession()
 
+	// build the select request to get the user data fromt he data store
 	stmt, names := qb.Select("default.users").
 		Where(qb.Eq("username")).
 		ToCql()
-
 	q := gocqlx.Query(session.Query(stmt), names).BindMap(qb.M{
 		"username": name,
 	})
+	defer q.Release()
 
 	var u User
 	if err := gocqlx.Get(&u, q.Query); err != nil {
-		logrus.Error(err)
-		return fosite.ErrRequestUnauthorized
+		logrus.WithField("error", err).Error("failed to get user")
+		return errors.WithStack(fosite.ErrRequestUnauthorized)
 	}
 	err := u.VerifyPassword(secret)
 	if err != nil {
-		logrus.Error(err)
-		return fosite.ErrRequestUnauthorized
+		logrus.WithField("error", err).Error("failed to authorize user")
+		return errors.WithStack(fosite.ErrRequestUnauthorized)
 	}
-
 	return nil
 }
 
+// revoke all tokens with the specified request id
 func (adapter *DataStoreAdapter) RevokeRefreshToken(ctx context.Context, requestID string) error {
 
-	logrus.Debug("RevokeRefreshToken")
+	logrus.Debug("revoke refresh token")
 	return adapter.revokeToken(requestID)
 }
 
+// revoke all tokens with the specified request id
 func (adapter *DataStoreAdapter) RevokeAccessToken(ctx context.Context, requestID string) error {
 
-	logrus.Debug("RevokeAccessToken")
+	logrus.Debug("revoke access token")
 	return adapter.revokeToken(requestID)
 }
 
+// revoke all tokens with the specified request id
 func (adapter *DataStoreAdapter) revokeToken(requestID string) error {
 
 	session := adapter.getCqlSession()
 
-	// Get the signatures for the tokens with requestID
+	// get the signatures for the tokens with requestID
 	stmt, names := qb.Select("default.sessions").
 		Columns("signature").
 		Where(qb.Eq("request_id")).
 		ToCql()
-
-	// Execute select request
 	q := gocqlx.Query(session.Query(stmt), names).BindMap(qb.M{
 		"request_id": requestID,
 	})
+
+	// execute select request
 	var sigs []string
 	if err := gocqlx.Select(&sigs, q.Query); err != nil {
-		logrus.Error(err)
-		return fosite.ErrServerError
+
+		logrus.WithFields(logrus.Fields{
+			"error":err,
+			"request":requestID,
+		}).Error("failed to lookup request id")
+
+		return errors.WithStack(fosite.ErrServerError)
 	}
 	q.Release()
 
-	// Check that there are tokens to return
+	// check that there are tokens to return
 	if len(sigs) == 0 {
 		return nil
 	}
 
-	// Delete the tokens with the matching signatures
+	// delete the tokens with the matching signatures
 	stmt, names = qb.Delete("default.sessions").
 		Where(qb.In("signature")).
 		ToCql()
 
-	// Execute delete request
+	// execute delete request
 	q = gocqlx.Query(session.Query(stmt), names).BindMap(qb.M{
 		"signature": sigs,
 	})
@@ -308,24 +333,54 @@ func (adapter *DataStoreAdapter) revokeToken(requestID string) error {
 			"error" :err,
 			"signatures" : sigs,
 		}).Error("failed to delete tokens")
-		return err
+		return errors.WithStack(err)
 	}
 	return nil
 }
 
+// create a new user in the data store
+// user must be non-nil
 func (adapter *DataStoreAdapter) CreateUser(user *User) error {
+
+	logrus.WithField("client", user.Username).Debug("create client")
+	if user == nil {
+		return fosite.ErrInvalidRequest.WithDebug("attempted to create a nil user")
+	}
 
 	session := adapter.getCqlSession()
 
-
+	// build the user insert query
 	stmt, names := qb.Insert("default.users").
 		Columns("username", "password_hash", "role").
 		ToCql()
-
 	q := gocqlx.Query(session.Query(stmt), names).BindStruct(user)
+	defer q.Release()
+
+	// insert the user
 	if err := q.ExecRelease(); err != nil {
 		logrus.WithField("error", err).Fatal("failed to create user")
-		return err
+		return errors.WithStack(err)
 	}
 	return nil
+}
+
+// unsupported authorization grant operation
+func (adapter *DataStoreAdapter) CreateAuthorizeCodeSession(ctx context.Context, code string, req fosite.Requester) error {
+
+	logrus.Error("unsupported: create authorize code session")
+	return adapter.createSession(code, req, NoTtl)
+}
+
+// unsupported authorization grant operation
+func (adapter *DataStoreAdapter) GetAuthorizeCodeSession(ctx context.Context, code string, _ fosite.Session) (fosite.Requester, error) {
+
+	logrus.Error("unsupported: get authorize code session")
+	return adapter.getSession(code)
+}
+
+// unsupported authorization grant operation
+func (adapter *DataStoreAdapter) DeleteAuthorizeCodeSession(ctx context.Context, code string) error {
+
+	logrus.Error("unsupported: delete authorize code session")
+	return adapter.deleteSession(code)
 }
