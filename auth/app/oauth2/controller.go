@@ -11,6 +11,7 @@ import (
 type HTTPController struct {
 	adapter *DataStoreAdapter
 	auth fosite.OAuth2Provider
+	hasher fosite.Hasher
 }
 
 func NewController(app *core.App, secret string) *HTTPController {
@@ -19,23 +20,23 @@ func NewController(app *core.App, secret string) *HTTPController {
 		logrus.Fatal("Attempted to create an http controller with a nil app.")
 	}
 	config := &compose.Config{}
+	hasher := &fosite.BCrypt{WorkFactor: config.GetHashCost()}
 	secretBytes := []byte(secret)
 
 	ctrl := new(HTTPController)
 	ctrl.adapter = NewDataStoreAdapter(app.GetDatastore())
 
-
 	ctrl.auth = compose.Compose(
 		config,
 		ctrl.adapter,
 		&compose.CommonStrategy{
-			CoreStrategy:               compose.NewOAuth2HMACStrategy(config, secretBytes),
+			CoreStrategy: compose.NewOAuth2HMACStrategy(config, secretBytes),
 			OpenIDConnectTokenStrategy: nil,
 		},
-		nil,
+		hasher,
 		compose.OAuth2ClientCredentialsGrantFactory,
 		compose.OAuth2RefreshTokenGrantFactory,
-		compose.OAuth2ResourceOwnerPasswordCredentialsFactory,
+		OAuth2ResourceOwnerPasswordCredentialsFactory(hasher),
 		compose.OAuth2TokenIntrospectionFactory,
 		compose.OAuth2TokenRevocationFactory,
 	)

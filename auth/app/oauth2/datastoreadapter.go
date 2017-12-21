@@ -245,7 +245,7 @@ func (adapter *DataStoreAdapter) DeleteRefreshTokenSession(ctx context.Context, 
 
 // authenticate a user with the provided username and secret password
 // if the authentication succeeds nil is returned
-func (adapter *DataStoreAdapter) Authenticate(ctx context.Context, name string, secret string) error {
+func (adapter *DataStoreAdapter) GetUser(ctx context.Context, name string) (User, error) {
 
 	logrus.WithField("name", name).Debug("authenticate")
 
@@ -260,17 +260,12 @@ func (adapter *DataStoreAdapter) Authenticate(ctx context.Context, name string, 
 	})
 	defer q.Release()
 
-	var u User
+	var u DefaultUser
 	if err := gocqlx.Get(&u, q.Query); err != nil {
 		logrus.WithField("error", err).Error("failed to get user")
-		return errors.WithStack(fosite.ErrRequestUnauthorized)
+		return nil, errors.WithStack(fosite.ErrRequestUnauthorized)
 	}
-	err := u.VerifyPassword(secret)
-	if err != nil {
-		logrus.WithField("error", err).Error("failed to authorize user")
-		return errors.WithStack(fosite.ErrRequestUnauthorized)
-	}
-	return nil
+	return &u, nil
 }
 
 // revoke all tokens with the specified request id
@@ -340,7 +335,7 @@ func (adapter *DataStoreAdapter) revokeToken(requestID string) error {
 
 // create a new user in the data store
 // user must be non-nil
-func (adapter *DataStoreAdapter) CreateUser(user *User) error {
+func (adapter *DataStoreAdapter) CreateUser(user *DefaultUser) error {
 
 	logrus.WithField("client", user.Username).Debug("create client")
 	if user == nil {
@@ -351,7 +346,7 @@ func (adapter *DataStoreAdapter) CreateUser(user *User) error {
 
 	// build the user insert query
 	stmt, names := qb.Insert("default.users").
-		Columns("username", "password_hash", "role").
+		Columns("username", "password_hash").
 		ToCql()
 	q := gocqlx.Query(session.Query(stmt), names).BindStruct(user)
 
