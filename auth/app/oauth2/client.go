@@ -1,7 +1,6 @@
 package oauth2
 
 import (
-	"crypto/rand"
 	"github.com/sirupsen/logrus"
 	"github.com/ory/fosite"
 )

@@ -40,8 +40,10 @@ func NewController(app *core.App, config *Config) *HTTPController {
 	app.AddEndpoint("/oauth2/token", false, ctrl.Token)
 	app.AddEndpoint("/oauth2/introspect", false, ctrl.Introspect)
 	app.AddEndpoint("/oauth2/revoke", false, ctrl.Revoke)
+
 	app.AddEndpoint("/oauth2/login", false, ctrl.Login).Methods("GET")
 	app.AddEndpoint("/oauth2/login", false, ctrl.Submit).Methods("POST")
-
+	app.AddEndpoint("/oauth2/register", false, ctrl.Register).Methods("GET")
+	app.AddEndpoint("/oauth2/register", false, ctrl.SubmitRegistration).Methods("POST")
 	return ctrl
 }

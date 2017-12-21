@@ -3,6 +3,7 @@ package oauth2
 import (
 	"golang.org/x/crypto/bcrypt"
 	"github.com/ory/fosite"
+	"github.com/sirupsen/logrus"
 )
 
 type User interface {
@@ -18,6 +19,7 @@ type User interface {
 
 type DefaultUser struct {
 	Username string
+	Password string
 	PasswordHash []byte
 	Scopes []string
 }
@@ -34,23 +36,26 @@ func (u *DefaultUser) GetScopes() fosite.Arguments {
 	return u.Scopes
 }
 
+func (u *DefaultUser) AppendScope(scope string) {
+	for _, cur := range u.Scopes {
+		if cur == scope {
+			logrus.WithFields(logrus.Fields{
+				"username": u.Username,
+				"scope":   scope,
+			},).Warning("attempted to add duplicate scope")
+			return
+		}
+	}
+	u.Scopes = append(u.Scopes, scope)
+}
 
-func NewUser(username string, password string) (*DefaultUser, error) {
-
+func NewUser(username string, password string) *DefaultUser {
 	return &DefaultUser{
 		username,
 		password,
 		nil,
-	}, nil
-}
-
-func NewAdmin(username string, password string) (*DefaultUser, error) {
-
-	user, err := NewUser(username, password)
-	if err != nil {
-		return nil, err
+		[]string{"offline", "user"},
 	}
-	return user, nil
 }
 
 func (user *DefaultUser) VerifyPassword(password string) error {

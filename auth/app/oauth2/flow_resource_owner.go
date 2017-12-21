@@ -74,6 +74,11 @@ func (c *ResourceOwnerPasswordCredentialsGrantHandler) HandleTokenEndpointReques
 	if err := c.Hasher.Compare(user.GetHashedPassword(), []byte(password)); err != nil {
 		return errors.WithStack(fosite.ErrUnauthorizedClient)
 	}
+	ses, ok := request.GetSession().(*fosite.DefaultSession)
+	if !ok {
+		return errors.WithStack(fosite.ErrServerError)
+	}
+	ses.Username = username
 
 	client := request.GetClient()
 	for _, scope := range request.GetRequestedScopes() {

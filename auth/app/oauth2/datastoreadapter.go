@@ -172,6 +172,7 @@ func (adapter *DataStoreAdapter) CreateClient(client *Client) error {
 	// build the insert client query
 	stmt, names := qb.Insert("default.clients").
 		Columns("id", "secret_hash", "redirect_uris", "grant_types", "response_types", "scopes", "public").
+		Unique().
 		ToCql()
 	q := gocqlx.Query(session.Query(stmt), names).BindStruct(client)
 
@@ -374,9 +375,20 @@ func (adapter *DataStoreAdapter) CreateUser(user *DefaultUser) error {
 
 	session := adapter.getCqlSession()
 
+	// Compute the secret hash if it doesn't already exist
+	if user.PasswordHash == nil {
+		hash, err  := adapter.hasher.Hash([]byte(user.Password))
+		if err != nil {
+			logrus.WithField("error", err).Error("failed to hash user password")
+			return errors.WithStack(err)
+		}
+		user.PasswordHash = hash
+	}
+
 	// build the user insert query
 	stmt, names := qb.Insert("default.users").
-		Columns("username", "password_hash").
+		Columns("username", "password_hash", "scopes").
+		Unique().
 		ToCql()
 	q := gocqlx.Query(session.Query(stmt), names).BindStruct(user)
 

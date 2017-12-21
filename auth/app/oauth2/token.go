@@ -20,10 +20,7 @@ func (ctrl *HTTPController) Token(w http.ResponseWriter, req *http.Request) {
 		logger.Warning(err)
 		ctrl.auth.WriteAccessError(w, accessRequest, err)
 		return
-	} else if accessRequest.GetGrantTypes().Exact(PASSWORD_GRANT) {
-		session.Username = accessRequest.GetRequestForm().Get("username")
 	}
-
 	// Grant requested scopes
 	for _, scope := range accessRequest.GetRequestedScopes() {
 		if fosite.HierarchicScopeStrategy(accessRequest.GetClient().GetScopes(), scope) {
