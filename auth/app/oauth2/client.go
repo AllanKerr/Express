@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"github.com/sirupsen/logrus"
 	"github.com/ory/fosite"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type Client struct {
@@ -16,12 +15,6 @@ type Client struct {
 	ResponseTypes []string
 	Scopes        []string
 	Public        bool
-}
-
-func generateRandomBytes(n int) ([]byte, error) {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
-	return b, err
 }
 
 func NewClient(id string, secret string, public bool) *Client {
@@ -92,9 +85,5 @@ func (c *Client) AppendGrant(grant string) {
 
 func (c *Client) GetResponseTypes() fosite.Arguments {
 	return fosite.Arguments(c.ResponseTypes)
-}
-
-func (c *Client) VerifyPassword(password string) error {
-	return bcrypt.CompareHashAndPassword(c.SecretHash, []byte(password))
 }
 
