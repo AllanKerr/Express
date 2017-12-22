@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-var handler *handlers.CommandHandler
+var handler = &handlers.CommandHandler{}
 
 var RootCmd = &cobra.Command{
 	Use:   "app",
@@ -18,7 +18,8 @@ func init() {
 	c, err := kube.NewDefaultClient()
 	if err != nil {
 		fmt.Println(err)
-		return
+		panic("error")
 	}
-	handler = handlers.NewCommandHandler(c)
+	handler.Client = c
+
 }
