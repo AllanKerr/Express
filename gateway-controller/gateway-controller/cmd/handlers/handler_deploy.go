@@ -113,6 +113,13 @@ func (handler *DeployHandler) createDeployment(name string, image string, port i
 									ContainerPort: port,
 								},
 							},
+							Lifecycle: &apiv1.Lifecycle{
+								PreStop: &apiv1.Handler{
+									Exec: &apiv1.ExecAction{
+										Command: []string{"sleep", "15"},
+									},
+								},
+							},
 						},
 					},
 				},
@@ -173,10 +180,13 @@ func (handler *DeployHandler) createEndpoints(name string, port int32, configFil
 		handler.err = err
 		return
 	}
+
+	hasError := handler.err != nil
+
 	txn := kube.NewIngressTransaction(handler.client, apiv1.NamespaceDefault)
 	if err := handler.Execute(txn, ingresses); err == nil {
 		fmt.Printf("Created ingresses %q.\n", name)
-	} else {
+	} else if !hasError {
 		// Append the transaction to be rolled back in case some of the ingresses were created
 		handler.transactions = append(handler.transactions, txn)
 	}
