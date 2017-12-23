@@ -6,6 +6,8 @@ import (
 	typedappsv1beta2 "k8s.io/client-go/kubernetes/typed/apps/v1beta2"
 	typedapiv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
+	typedextensionsv1beta1 "k8s.io/client-go/kubernetes/typed/extensions/v1beta1"
+	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	typedautoscalingv2beta1 "k8s.io/client-go/kubernetes/typed/autoscaling/v2beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -79,4 +81,45 @@ func (txn *AutoscalerTransaction) Rollback(name string) error {
 	return txn.aInterface.Delete(name, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})
+}
+
+type IngressTransaction struct {
+	iInterface typedextensionsv1beta1.IngressInterface
+	names []string
+}
+
+func NewIngressTransaction(client *Client, namespace string) *IngressTransaction {
+	return &IngressTransaction{
+		iInterface: client.ExtensionsV1beta1().Ingresses(namespace),
+	}
+}
+
+func (txn *IngressTransaction) Execute(ing interface{}) error {
+
+	ingresses := ing.([]*extensionsv1beta1.Ingress)
+	for _, ingress := range ingresses {
+
+		ingress, err := txn.iInterface.Create(ingress)
+		if err != nil {
+			txn.Rollback("")
+			return err
+		}
+		txn.names = append(txn.names, ingress.GetObjectMeta().GetName())
+	}
+	return nil
+}
+
+func (txn *IngressTransaction) Rollback(name string) error {
+
+	deletePolicy := metav1.DeletePropagationForeground
+	options := &metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	}
+
+	for _, name := range txn.names {
+		if err := txn.iInterface.Delete(name, options); err != nil {
+			return err
+		}
+	}
+	return nil
 }

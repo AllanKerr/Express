@@ -1,0 +1,10 @@
+endpoints:
+  - path: /hi
+    scopes: [admin, fancyperm]
+  - path: /goff
+    scopes: [user]
+  - path: /wtf/mate
+    scopes: [user]
+  - path: /hmm/mate
+    scopes: [user, admin]
+  - path: /nonprotected/

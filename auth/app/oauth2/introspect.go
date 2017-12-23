@@ -18,6 +18,9 @@ func (ctrl *HTTPController) Introspect(w http.ResponseWriter, req *http.Request)
 
 	var scopes []string
 	scopesHeader := req.Header.Get("Scopes")
+
+	logrus.Info("Headers: " + scopesHeader)
+
 	if scopesHeader == "" {
 		scopes = []string{}
 	} else {

@@ -10,6 +10,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"gateway-controller/kube"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"io/ioutil"
+	"gopkg.in/yaml.v2"
 )
 
 type DeployHandler struct {
@@ -150,10 +152,38 @@ func (handler *DeployHandler) createAutoscaler(name string, min int32, max int32
 	}
 }
 
+func (handler *DeployHandler) createEndpoints(name string, port int32, configFile string) {
+
+	// If no config file is given, treat it as a private service with no endpoints
+	if configFile == "" {
+		return
+	}
+	file, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		handler.err = err
+		return
+	}
+	var endpoints kube.EndpointsConfig
+	if err := yaml.Unmarshal(file, &endpoints); err != nil {
+		handler.err = err
+		return
+	}
+	ingresses, err := kube.ParseConfig(name, port, &endpoints)
+	if err != nil {
+		handler.err = err
+		return
+	}
+	txn := kube.NewIngressTransaction(handler.client, apiv1.NamespaceDefault)
+	if err := handler.Execute(txn, ingresses); err == nil {
+		fmt.Printf("Created ingresses %q.\n", name)
+	}
+}
+
 func (ch *CommandHandler) Deploy(command *cobra.Command, args []string) {
 
 	name := args[0]
 	image := args[1]
+	configFile, _ := command.Flags().GetString("endpoint-config")
 	port, _ := command.Flags().GetInt32("port")
 	min, _ := command.Flags().GetInt32("min")
 	max, _ := command.Flags().GetInt32("max")
@@ -165,6 +195,7 @@ func (ch *CommandHandler) Deploy(command *cobra.Command, args []string) {
 	handler.createService(name, port)
 	handler.createDeployment(name, image, port, min)
 	handler.createAutoscaler(name, min, max)
+	handler.createEndpoints(name, port, configFile)
 
 	if handler.err != nil {
 		if errors.IsAlreadyExists(handler.err) {
