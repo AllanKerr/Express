@@ -31,19 +31,8 @@ func (ch *CommandHandler) updateDeployment(name string, flags *pflag.FlagSet) {
 		imagePtr = &image
 	}
 
-	var portPtr *int32
-	port, _ := flags.GetInt32("port")
-	if flags.Changed("port") {
-		portPtr = &port
-	}
-
 	update := &kube.ContainerUpdate{
 		Image: imagePtr,
-		Ports: []kube.ContainerPortUpdate{
-			{
-				ContainerPort: portPtr,
-			},
-		},
 	}
 	if err := updater.Update(name, update); err != nil {
 		fmt.Println(err.Error())

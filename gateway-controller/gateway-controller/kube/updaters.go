@@ -8,11 +8,6 @@ import (
 
 type ContainerUpdate struct {
 	Image *string
-	Ports []ContainerPortUpdate
-}
-
-type ContainerPortUpdate struct {
-	ContainerPort *int32
 }
 
 type ObjectUpdater interface {
@@ -33,7 +28,6 @@ func NewDeploymentUpdater(client *Client, namespace string) *DeploymentUpdater {
 func (updater *DeploymentUpdater) GetModifiers() []string {
 	return []string{
 		"image",
-		"port",
 	}
 }
 
@@ -52,13 +46,6 @@ func (updater *DeploymentUpdater) Update(name string, update interface{}) error 
 			containerSpec.Image = *containerUpdate.Image
 		}
 		result.Spec.Template.Spec.Containers[0] = containerSpec
-
-		portUpdate := containerUpdate.Ports[0]
-		portSpec := containerSpec.Ports[0]
-		if portUpdate.ContainerPort != nil {
-			portSpec.ContainerPort = *portUpdate.ContainerPort
-		}
-		result.Spec.Template.Spec.Containers[0].Ports[0] = portSpec
 
 		_, updateErr := updater.dInterface.Update(result)
 		return updateErr
