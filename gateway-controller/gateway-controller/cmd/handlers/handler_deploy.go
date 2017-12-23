@@ -176,6 +176,9 @@ func (handler *DeployHandler) createEndpoints(name string, port int32, configFil
 	txn := kube.NewIngressTransaction(handler.client, apiv1.NamespaceDefault)
 	if err := handler.Execute(txn, ingresses); err == nil {
 		fmt.Printf("Created ingresses %q.\n", name)
+	} else {
+		// Append the transaction to be rolled back in case some of the ingresses were created
+		handler.transactions = append(handler.transactions, txn)
 	}
 }
 
@@ -191,6 +194,7 @@ func (ch *CommandHandler) Deploy(command *cobra.Command, args []string) {
 		max = min
 	}
 
+	fmt.Println("Starting deploy...")
 	handler := NewDeployHandler(ch.Client, name)
 	handler.createService(name, port)
 	handler.createDeployment(name, image, port, min)
@@ -205,5 +209,8 @@ func (ch *CommandHandler) Deploy(command *cobra.Command, args []string) {
 		}
 		fmt.Println("Rolling back...")
 		handler.Rollback()
+		fmt.Println("Rollback complete")
+	} else {
+		fmt.Println("Deploy complete")
 	}
 }
