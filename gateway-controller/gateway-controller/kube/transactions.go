@@ -85,7 +85,6 @@ func (txn *AutoscalerTransaction) Rollback(name string) error {
 
 type IngressTransaction struct {
 	iInterface typedextensionsv1beta1.IngressInterface
-	names []string
 }
 
 func NewIngressTransaction(client *Client, namespace string) *IngressTransaction {
@@ -98,13 +97,9 @@ func (txn *IngressTransaction) Execute(ing interface{}) error {
 
 	ingresses := ing.([]*extensionsv1beta1.Ingress)
 	for _, ingress := range ingresses {
-
-		ingress, err := txn.iInterface.Create(ingress)
-		if err != nil {
-			txn.Rollback("")
+		if _, err := txn.iInterface.Create(ingress); err != nil {
 			return err
 		}
-		txn.names = append(txn.names, ingress.GetObjectMeta().GetName())
 	}
 	return nil
 }
@@ -116,10 +111,7 @@ func (txn *IngressTransaction) Rollback(name string) error {
 		PropagationPolicy: &deletePolicy,
 	}
 
-	for _, name := range txn.names {
-		if err := txn.iInterface.Delete(name, options); err != nil {
-			return err
-		}
-	}
-	return nil
+	return txn.iInterface.DeleteCollection(options, metav1.ListOptions{
+		LabelSelector: "app=" + name,
+	})
 }
