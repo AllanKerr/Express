@@ -59,6 +59,16 @@ const RewriteSnippet = `
 	rewrite ^/%v/(.*)$ /$1 break;
 `
 
+func (group *endpointGroup) getHashCode() int {
+
+	var hashCode int
+	group.scopes.Each(func(item interface{}) bool {
+		hashCode ^= hashString(item.(string))
+		return true
+	})
+	return hashCode
+}
+
 func (group *endpointGroup) getAnnotations(name string) map[string]string {
 
 	var snippet string
@@ -75,6 +85,7 @@ func (group *endpointGroup) GetIngress(name string, port int32) *extensionsv1bet
 
 	labels := map[string]string{
 		"app": name,
+		"identifier" : string(group.getHashCode()),
 	}
 
 	backend := extensionsv1beta1.IngressBackend{
