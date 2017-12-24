@@ -15,7 +15,6 @@ func init() {
 	updateCmd.Flags().String("image", "", "The new Docker image to roll out.")
 	updateCmd.Flags().Int32("min", 1, "The minimum number of instances.")
 	updateCmd.Flags().Int32("max", -1, "The minimum number of instances.")
-	updateCmd.Flags().Int("cpu-percent", 80, "The CPU usage threshold at which to scale up")
 	updateCmd.Flags().String("endpoint-config", "", "The configuration file for accessing the deployed API.")
 
 	RootCmd.AddCommand(updateCmd)
