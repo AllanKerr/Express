@@ -10,21 +10,21 @@ import (
 	"io/ioutil"
 )
 
-type DeployHandler struct {
+type deployHandler struct {
 	name string
 	client *kube.Client
 	transactions []kube.Transaction
 	err error
 }
 
-func NewDeployHandler(client *kube.Client, name string) *DeployHandler {
-	return &DeployHandler{
+func newDeployHandler(client *kube.Client, name string) *deployHandler {
+	return &deployHandler{
 		name: name,
 		client: client,
 	}
 }
 
-func (handler *DeployHandler) Execute(txn kube.Transaction, obj interface{}) error {
+func (handler *deployHandler) execute(txn kube.Transaction, obj interface{}) error {
 
 	if handler.err != nil {
 		return handler.err
@@ -37,7 +37,7 @@ func (handler *DeployHandler) Execute(txn kube.Transaction, obj interface{}) err
 	return nil
 }
 
-func (handler *DeployHandler) Rollback() {
+func (handler *deployHandler) Rollback() {
 
 	for _, txn := range handler.transactions {
 		if err := txn.Rollback(handler.name); err != nil {
@@ -46,7 +46,7 @@ func (handler *DeployHandler) Rollback() {
 	}
 }
 
-func (handler *DeployHandler) createService(name string, port int32) {
+func (handler *deployHandler) createService(name string, port int32) {
 
 	service := kube.DefaultServiceConfig()
 
@@ -64,12 +64,12 @@ func (handler *DeployHandler) createService(name string, port int32) {
 	}
 
 	txn := kube.NewServiceTransaction(handler.client, apiv1.NamespaceDefault)
-	if err := handler.Execute(txn, service); err == nil {
+	if err := handler.execute(txn, service); err == nil {
 		fmt.Printf("Created service %q.\n", name)
 	}
 }
 
-func (handler *DeployHandler) createDeployment(name string, image string, port int32, n int32) {
+func (handler *deployHandler) createDeployment(name string, image string, port int32, n int32) {
 
 	labels := map[string]string{
 		"app": name,
@@ -89,14 +89,14 @@ func (handler *DeployHandler) createDeployment(name string, image string, port i
 	deployment.Spec.Template.Spec.Containers[0].Name = name
 	deployment.Spec.Template.Spec.Containers[0].Image = image
 	deployment.Spec.Template.Spec.Containers[0].Ports[0].ContainerPort = port
-	
+
 	txn := kube.NewDeploymentTransaction(handler.client, apiv1.NamespaceDefault)
-	if err := handler.Execute(txn, deployment); err == nil {
+	if err := handler.execute(txn, deployment); err == nil {
 		fmt.Printf("Created deployment %q.\n", name)
 	}
 }
 
-func (handler *DeployHandler) createAutoscaler(name string, min int32, max int32) {
+func (handler *deployHandler) createAutoscaler(name string, min int32, max int32) {
 
 	autoscaler := kube.DefaultAutoscalerConfig()
 
@@ -110,12 +110,12 @@ func (handler *DeployHandler) createAutoscaler(name string, min int32, max int32
 	autoscaler.Spec.MaxReplicas = max
 
 	txn := kube.NewAutoscalerTransaction(handler.client, apiv1.NamespaceDefault)
-	if err := handler.Execute(txn, autoscaler); err == nil {
+	if err := handler.execute(txn, autoscaler); err == nil {
 		fmt.Printf("Created autoscaler %q.\n", name)
 	}
 }
 
-func (handler *DeployHandler) createEndpoints(name string, port int32, configFile string) {
+func (handler *deployHandler) createEndpoints(name string, port int32, configFile string) {
 
 	// If no config file is given, treat it as a private service with no endpoints
 	if configFile == "" {
@@ -136,7 +136,7 @@ func (handler *DeployHandler) createEndpoints(name string, port int32, configFil
 	hasError := handler.err != nil
 
 	txn := kube.NewIngressTransaction(handler.client, apiv1.NamespaceDefault)
-	if err := handler.Execute(txn, ingresses); err == nil {
+	if err := handler.execute(txn, ingresses); err == nil {
 		fmt.Printf("Created ingresses %q.\n", name)
 	} else if !hasError {
 		// Append the transaction to be rolled back in case some of the ingresses were created
@@ -157,7 +157,7 @@ func (ch *CommandHandler) Deploy(command *cobra.Command, args []string) {
 	}
 
 	fmt.Println("Starting deploy...")
-	handler := NewDeployHandler(ch.Client, name)
+	handler := newDeployHandler(ch.Client, name)
 	handler.createService(name, port)
 	handler.createDeployment(name, image, port, min)
 	handler.createAutoscaler(name, min, max)
