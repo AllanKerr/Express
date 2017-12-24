@@ -18,9 +18,9 @@ func RequiresUpdate(flags *pflag.FlagSet, updater kube.ObjectUpdater) bool {
 	return false
 }
 
-func (ch *CommandHandler) updateDeployment(name string, flags *pflag.FlagSet) {
+func (ch *CommandHandler) updateDeployment(namespace string, name string, flags *pflag.FlagSet) {
 
-	updater := kube.NewDeploymentUpdater(ch.Client, apiv1.NamespaceDefault)
+	updater := kube.NewDeploymentUpdater(ch.Client, namespace)
 	if !RequiresUpdate(flags, updater) {
 		return
 	}
@@ -35,16 +35,49 @@ func (ch *CommandHandler) updateDeployment(name string, flags *pflag.FlagSet) {
 		Image: imagePtr,
 	}
 	if err := updater.Update(name, update); err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf("Unable to update deployment: %v\n", err.Error())
+	} else {
+		fmt.Println("Updated deployment.")
+	}
+}
+
+func (ch *CommandHandler) updateAutoscaler(namespace string, name string, flags *pflag.FlagSet) {
+
+	updater := kube.NewAutoscalerUpdater(ch.Client, namespace)
+	if !RequiresUpdate(flags, updater) {
+		return
+	}
+
+	var minPtr *int32
+	var maxPtr *int32
+	min, _ := flags.GetInt32("min")
+	max, _ := flags.GetInt32("max")
+	if flags.Changed("min") {
+		minPtr = &min
+	}
+	if flags.Changed("max") {
+		maxPtr = &max
+	}
+
+	update := &kube.AutoscalerUpdate {
+		MinReplicas: minPtr,
+		MaxReplicas: maxPtr,
+	}
+	if err := updater.Update(name, update); err != nil {
+		fmt.Printf("Unable to update autoscaler: %v\n", err.Error())
+	} else {
+		fmt.Println("Updated autoscaler.")
 	}
 }
 
 func (ch *CommandHandler) Update(command *cobra.Command, args []string) {
 
 	name := args[0]
+	namespace := apiv1.NamespaceDefault
 	flags := command.Flags()
 
-	ch.updateDeployment(name, flags)
+	ch.updateDeployment(namespace, name, flags)
+	ch.updateAutoscaler(namespace, name, flags)
 
 
 }
