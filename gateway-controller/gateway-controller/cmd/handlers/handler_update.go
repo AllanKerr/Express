@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/pflag"
 	"gateway-controller/kube"
 	"fmt"
+	"io/ioutil"
+	"gopkg.in/yaml.v2"
 )
 
 func RequiresUpdate(flags *pflag.FlagSet, updater kube.ObjectUpdater) bool {
@@ -70,6 +72,34 @@ func (ch *CommandHandler) updateAutoscaler(namespace string, name string, flags 
 	}
 }
 
+func (ch *CommandHandler) updateEndpoints(namespace string, name string, flags *pflag.FlagSet) {
+
+	updater := kube.NewIngressUpdater(ch.Client, namespace)
+	if !RequiresUpdate(flags, updater) {
+		return
+	}
+
+	configFile, _ := flags.GetString("endpoint-config")
+	file, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		return
+	}
+	var endpoints kube.EndpointsConfig
+	if err := yaml.Unmarshal(file, &endpoints); err != nil {
+		return
+	}
+	ingresses, err := kube.ParseConfig(name, 0, &endpoints)
+	if err != nil {
+		return
+	}
+
+	if err := updater.Update(name, ingresses); err != nil {
+		fmt.Printf("Unable to update endpoints: %v\n", err.Error())
+	} else {
+		fmt.Println("Updated endpoints.")
+	}
+}
+
 func (ch *CommandHandler) Update(command *cobra.Command, args []string) {
 
 	name := args[0]
@@ -78,6 +108,7 @@ func (ch *CommandHandler) Update(command *cobra.Command, args []string) {
 
 	ch.updateDeployment(namespace, name, flags)
 	ch.updateAutoscaler(namespace, name, flags)
+	ch.updateEndpoints(namespace, name, flags)
 
 
 }
