@@ -6,7 +6,6 @@ import (
 	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"gateway-controller/kube"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -127,24 +126,17 @@ func (handler *DeployHandler) createDeployment(name string, image string, port i
 
 func (handler *DeployHandler) createAutoscaler(name string, min int32, max int32) {
 
-	labels := map[string]string{
+	autoscaler := kube.DefaultAutoscalerConfig()
+
+	autoscaler.Name = name
+	autoscaler.Labels = map[string]string{
 		"app": name,
 	}
 
-	autoscaler := &autoscalingv2beta1.HorizontalPodAutoscaler{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-			Labels: labels,
-		},
-		Spec: autoscalingv2beta1.HorizontalPodAutoscalerSpec{
-			ScaleTargetRef: autoscalingv2beta1.CrossVersionObjectReference{
-				Kind: "Deployment",
-				Name: name,
-			},
-			MinReplicas: &min,
-			MaxReplicas: max,
-		},
-	}
+	autoscaler.Spec.ScaleTargetRef.Name = name
+	autoscaler.Spec.MinReplicas = &min
+	autoscaler.Spec.MaxReplicas = max
+
 	txn := kube.NewAutoscalerTransaction(handler.client, apiv1.NamespaceDefault)
 	if err := handler.Execute(txn, autoscaler); err == nil {
 		fmt.Printf("Created autoscaler %q.\n", name)
