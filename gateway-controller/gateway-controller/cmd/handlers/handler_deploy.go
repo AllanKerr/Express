@@ -51,27 +51,19 @@ func (handler *DeployHandler) Rollback() {
 
 func (handler *DeployHandler) createService(name string, port int32) {
 
-	labels := map[string]string{
+	service := kube.DefaultServiceConfig()
+
+	service.ObjectMeta.Name = name
+	service.ObjectMeta.Labels = map[string]string{
 		"app": name,
 		"group": "services",
 	}
 
-	service := &apiv1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-			Labels: labels,
-		},
-		Spec: apiv1.ServiceSpec{
-			Ports: []apiv1.ServicePort{
-				{
-					Protocol: apiv1.ProtocolTCP,
-					Port: port,
-					TargetPort: intstr.FromInt(int(port)),
-				},
-			},
-			Selector: labels,
-			Type: apiv1.ServiceTypeNodePort,
-		},
+	service.Spec.Ports[0].Port = port
+	service.Spec.Ports[0].TargetPort = intstr.FromInt(int(port))
+
+	service.Spec.Selector = map[string]string {
+		"app": name,
 	}
 
 	txn := kube.NewServiceTransaction(handler.client, apiv1.NamespaceDefault)

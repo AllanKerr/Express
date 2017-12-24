@@ -58,7 +58,7 @@ const AuthSnippet = `
 `
 
 const RewriteSnippet = `
-	rewrite ^/%v/(.*)$ /$1 break;
+
 `
 
 func (group *endpointGroup) getHashCode() int {
@@ -80,7 +80,7 @@ func (group *endpointGroup) getAnnotations(name string) map[string]string {
 	if group.scopes != nil {
 		snippet += fmt.Sprintf(AuthSnippet, group.getScopes())
 	}
-	snippet += fmt.Sprintf(RewriteSnippet, name)
+	//snippet += fmt.Sprintf(RewriteSnippet, name)
 	return map[string]string{
 		"ingress.kubernetes.io/configuration-snippet": snippet,
 	}
