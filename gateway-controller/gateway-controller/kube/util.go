@@ -1,9 +1,9 @@
  /***************************************************************************************
- *    Title: Example: Deploying Cassandra with Stateful Sets
- *    Author: Kubernetes
- *    Date: Sep. 15, 2017
+ *    Fun with Java string hashing in Go
+ *    Author: Manni Wood
+ *    Date: Dec. 24, 2017
  *    Code version: 1.0
- *    Availability: https://kubernetes.io/docs/tutorials/stateful-application/cassandra/
+ *    Availability: https://www.manniwood.com/2016_03_20/fun_with_java_string_hashing.html
  *
  ***************************************************************************************/
 
