@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"k8s.io/client-go/tools/clientcmd"
 	"os"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apiv1 "k8s.io/api/core/v1"
 )
 
 type Client struct {
@@ -41,4 +43,13 @@ func homeDir() string {
 		return h
 	}
 	return os.Getenv("USERPROFILE") // windows
+}
+
+func (client *Client) ListServices(namespace string) ([]apiv1.Service, error) {
+
+	sClient := client.CoreV1().Services(namespace)
+	services, err := sClient.List(metav1.ListOptions{
+		LabelSelector: "group=services",
+	})
+	return services.Items, err
 }

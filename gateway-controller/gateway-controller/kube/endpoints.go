@@ -9,6 +9,7 @@ import (
 	"strings"
 	"fmt"
 	"strconv"
+	"gopkg.in/yaml.v2"
 )
 
 type Endpoint struct {
@@ -131,7 +132,20 @@ func (group *endpointGroup) GetIngress(name string, port int32) *extensionsv1bet
 	}
 }
 
-func ParseConfig(name string, port int32, config *EndpointsConfig) ([]*extensionsv1beta1.Ingress, error) {
+func unmarshallConfig(contents []byte) (*EndpointsConfig, error) {
+	var endpoints EndpointsConfig
+	if err := yaml.Unmarshal(contents, &endpoints); err != nil {
+		return nil, err
+	}
+	return &endpoints, nil
+}
+
+func ParseConfig(name string, port int32, contents []byte) ([]*extensionsv1beta1.Ingress, error) {
+
+	config, err := unmarshallConfig(contents)
+	if err != nil {
+		return nil, err
+	}
 
 	paths := set.New()
 	defaultGroup := &endpointGroup{}

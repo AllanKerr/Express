@@ -11,7 +11,6 @@ import (
 	"gateway-controller/kube"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"io/ioutil"
-	"gopkg.in/yaml.v2"
 )
 
 type DeployHandler struct {
@@ -54,6 +53,7 @@ func (handler *DeployHandler) createService(name string, port int32) {
 
 	labels := map[string]string{
 		"app": name,
+		"group": "services",
 	}
 
 	service := &apiv1.Service{
@@ -170,12 +170,8 @@ func (handler *DeployHandler) createEndpoints(name string, port int32, configFil
 		handler.err = err
 		return
 	}
-	var endpoints kube.EndpointsConfig
-	if err := yaml.Unmarshal(file, &endpoints); err != nil {
-		handler.err = err
-		return
-	}
-	ingresses, err := kube.ParseConfig(name, port, &endpoints)
+
+	ingresses, err := kube.ParseConfig(name, port, file)
 	if err != nil {
 		handler.err = err
 		return

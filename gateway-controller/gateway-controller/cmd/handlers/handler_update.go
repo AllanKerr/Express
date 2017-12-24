@@ -7,7 +7,6 @@ import (
 	"gateway-controller/kube"
 	"fmt"
 	"io/ioutil"
-	"gopkg.in/yaml.v2"
 )
 
 func RequiresUpdate(flags *pflag.FlagSet, updater kube.ObjectUpdater) bool {
@@ -84,11 +83,8 @@ func (ch *CommandHandler) updateEndpoints(namespace string, name string, flags *
 	if err != nil {
 		return
 	}
-	var endpoints kube.EndpointsConfig
-	if err := yaml.Unmarshal(file, &endpoints); err != nil {
-		return
-	}
-	ingresses, err := kube.ParseConfig(name, 0, &endpoints)
+
+	ingresses, err := kube.ParseConfig(name, 0, file)
 	if err != nil {
 		return
 	}
