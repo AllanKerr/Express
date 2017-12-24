@@ -8,6 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"strings"
 	"fmt"
+	"strconv"
 )
 
 type Endpoint struct {
@@ -61,6 +62,9 @@ const RewriteSnippet = `
 
 func (group *endpointGroup) getHashCode() int {
 
+	if group.scopes == nil {
+		return hashString("")
+	}
 	var hashCode int
 	group.scopes.Each(func(item interface{}) bool {
 		hashCode ^= hashString(item.(string))
@@ -85,7 +89,7 @@ func (group *endpointGroup) GetIngress(name string, port int32) *extensionsv1bet
 
 	labels := map[string]string{
 		"app": name,
-		"identifier" : string(group.getHashCode()),
+		"identifier" : strconv.Itoa(group.getHashCode()),
 	}
 
 	backend := extensionsv1beta1.IngressBackend{
@@ -163,7 +167,9 @@ func ParseConfig(name string, port int32, config *EndpointsConfig) ([]*extension
 	}
 
 	var ingresses []*extensionsv1beta1.Ingress
-	ingresses = append(ingresses, defaultGroup.GetIngress(name, port))
+	if len(defaultGroup.paths) > 0 {
+		ingresses = append(ingresses, defaultGroup.GetIngress(name, port))
+	}
 	for _, grp := range groups {
 		ingresses = append(ingresses, grp.GetIngress(name, port))
 	}
