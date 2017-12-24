@@ -3,9 +3,7 @@ package handlers
 import (
 	"github.com/spf13/cobra"
 	"fmt"
-	appsv1beta2 "k8s.io/api/apps/v1beta2"
 	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"gateway-controller/kube"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -77,47 +75,21 @@ func (handler *DeployHandler) createDeployment(name string, image string, port i
 		"app": name,
 	}
 
-	deployment := &appsv1beta2.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-			Labels: labels,
-		},
-		Spec: appsv1beta2.DeploymentSpec{
-			Replicas: &n,
-			Selector: &metav1.LabelSelector{
-				MatchLabels: labels,
-			},
-			Template: apiv1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: name,
-					Labels: labels,
-				},
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{
-						{
-							Name:  name,
-							Image: image,
-							Ports: []apiv1.ContainerPort{
-								{
-									Name:          "http",
-									Protocol:      apiv1.ProtocolTCP,
-									ContainerPort: port,
-								},
-							},
-							Lifecycle: &apiv1.Lifecycle{
-								PreStop: &apiv1.Handler{
-									Exec: &apiv1.ExecAction{
-										Command: []string{"sleep", "15"},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
+	deployment := kube.DefaultDeploymentConfig()
 
+	deployment.ObjectMeta.Name = name
+	deployment.ObjectMeta.Labels = labels
+
+	deployment.Spec.Replicas = &n
+	deployment.Spec.Selector.MatchLabels = labels
+
+	deployment.Spec.Template.ObjectMeta.Name = name
+	deployment.Spec.Template.ObjectMeta.Labels = labels
+
+	deployment.Spec.Template.Spec.Containers[0].Name = name
+	deployment.Spec.Template.Spec.Containers[0].Image = image
+	deployment.Spec.Template.Spec.Containers[0].Ports[0].ContainerPort = port
+	
 	txn := kube.NewDeploymentTransaction(handler.client, apiv1.NamespaceDefault)
 	if err := handler.Execute(txn, deployment); err == nil {
 		fmt.Printf("Created deployment %q.\n", name)
