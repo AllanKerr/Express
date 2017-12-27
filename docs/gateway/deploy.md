@@ -11,7 +11,7 @@ The `deploy` operation was designed to accept the minimum number of parameters r
 3. *Port.* The port of the application that the Docker container uses may be specified. All traffic to the deployed application will be sent through this port. If not port is provided, it will default to port 80.
 4. *Minimum Replicas.* The minimum number of instances of the application container to deploy. This is enforced by the autoscaler to ensure that the number of available instances never drops below this number regardless of CPU utilization.
 5. *Maximum Replicas.* The maximum number of instances of the application container to deploy. This is enforced by the autoscaler to ensure that the number of available instances never exceeds this number regardless of CPU utilization.
-6. *Endpoints Configuration.* To expose the application to the public through the gateway, an endpoints configuration `.yaml` file must be provided. This allows the developer to specify a set of paths to be exposed along with the a set of scopes on a per-path basis that the Oauth2 access token must possess to access the endpoint. [The design of the endpoints configuration specification is detailed here.](TODO)
+6. *Endpoints Configuration.* To expose the application to the public through the gateway, an endpoints configuration `.yaml` file must be provided. This allows the developer to specify a set of paths to be exposed along with the a set of scopes on a per-path basis that the Oauth2 access token must possess to access the endpoint. [The design of the endpoints configuration specification is detailed here.](./endpoints.md)
 
 ## Design
 
@@ -87,5 +87,4 @@ HorizontalPodAutoscaler {
 Inside `createAutoscaler`, the name of the deployment and the `app=name` name label are added to allow the autoscaler to locate the **Kubernetes** deployment it was created to manage. The minimum and maximum number of replicas are also provided. **If no user input was given then these are both set to 1**.
 
 ### 4. Create Endpoints
-The last step is to create the endpoints that are exposed to the public to allow access to the deployed application container. Creating the endpoints is the most complex part of deploying a new containerized application because it results in the creation of multiple [Kubernetes Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) configurations based on the `.yaml` endpoints configuration file provided by the developer.  
-[The `.yaml` endpoints configuration file specification and parser design is detailed here.]()
+The last step is to create the endpoints that are exposed to the public to allow access to the deployed application container. This process uses the endpoints .yaml parser to produce the set of [Kubernetes Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) configurations [as detailed here](./endpoints.md).
