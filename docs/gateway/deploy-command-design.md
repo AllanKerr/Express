@@ -1,19 +1,4 @@
-# Deploy Operation
-
-The deploy operation is designed to allow developers to deploy application containers with minimal need for configuration. This allows developers to rapidly deploy new applications without any of the overhead associated with directly managing Kubernetes objects.
-
-## Parameters
-
-The `deploy` operation was designed to accept the minimum number of parameters required to run, scale, and expose application containers. Because the `deploy` operation creates underlying Kubernetes objects, advanced users can modify their deployed application containers through [kubectl](https://kubernetes.io/docs/reference/kubectl/overview/) for more advanced configuration.
-
-1. *Name.* All deployed applications must be given a name by the developer. This is used to identify the Kubernetes objects associated with the deployed application. All Kubernetes objects are given the label `app=name` to allow identification. Because of this, all deployed applications must have unique names.
-2. *Image.* All deployed applications must be given a [Docker Image](https://docs.docker.com/get-started/part2/) which is executed to run the application. The current system is limited to images on public Docker repositories because images are pulled when the application is first deployed. Support for private Docker repositories will be added in the future.
-3. *Port.* The port of the application that the Docker container uses may be specified. All traffic to the deployed application will be sent through this port. If not port is provided, it will default to port 80.
-4. *Minimum Replicas.* The minimum number of instances of the application container to deploy. This is enforced by the autoscaler to ensure that the number of available instances never drops below this number regardless of CPU utilization.
-5. *Maximum Replicas.* The maximum number of instances of the application container to deploy. This is enforced by the autoscaler to ensure that the number of available instances never exceeds this number regardless of CPU utilization.
-6. *Endpoints Configuration.* To expose the application to the public through the gateway, an endpoints configuration `.yaml` file must be provided. This allows the developer to specify a set of paths to be exposed along with the a set of scopes on a per-path basis that the Oauth2 access token must possess to access the endpoint. [The design of the endpoints configuration specification is detailed here.](./endpoints-file.md)
-
-## Design
+# Deploy Command Design
 
 The design of the deploy operation is based on a transaction model where a transaction is used for each of the four Kubernetes objects. Successful transactions are tracked by the deployment handler. This allows for the handler to rollback all transactions if any of them fail.
 
