@@ -11,7 +11,6 @@ import (
 )
 
 type deployHandler struct {
-	name string
 	client *kube.Client
 	transactions []kube.Transaction
 	err error
