@@ -16,4 +16,4 @@ The `list` operation accepts no parameters.
 
 ## Design
 
-[The design of the list command can be found here.](./list-command-design)
+[The design of the list command can be found here.](./list-command-design.md)
