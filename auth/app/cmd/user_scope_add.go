@@ -5,6 +5,7 @@ import (
 	"app/core"
 	"app/oauth2"
 	"fmt"
+	"os"
 )
 
 var cmdUserScopeAdd = &cobra.Command{
@@ -14,7 +15,8 @@ var cmdUserScopeAdd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// start a new CQL session
-		ds, err := core.NewCQLDataStore("cassandra-0.cassandra:9042", "default")
+		databaseUrl := os.Getenv("DATABASE_URL")
+		ds, err := core.NewCQLDataStore(databaseUrl, "default")
 		if err != nil {
 			fmt.Errorf("failed to create data store session %g", err)
 		}
