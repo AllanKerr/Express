@@ -4,7 +4,7 @@ kind: Ingress
 metadata:
   name: {{ template "fullname" . }}
   labels:
-    app: {{ template "fullname" . }}
+    app: {{ template "name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
@@ -47,5 +47,5 @@ spec:
         path: /oauth2
   {{- if .Values.config.tls }}
   tls:
-{{ toYaml .Values.config.tls | indent 4 }}
+{{ toYaml .Values.ingress.tls | indent 4 }}
   {{- end -}}

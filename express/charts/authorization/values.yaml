@@ -2,6 +2,13 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 config:
+  system_secret: 4683F9F226766DF9165B51B56988F749
+  client:
+    id: admin
+    secret: demo-password
+  config:
+    database_name: cassandra
+    database_port: 9042
   tls:
     # Secrets must be manually created in the namespace.
     # - secretName: chart-example-tls

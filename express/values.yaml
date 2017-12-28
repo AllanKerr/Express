@@ -2,43 +2,41 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-external-auth:
-  nameOverride: external-auth
-
+authorization:
+  nameOverride: authorization
   config:
+    database_name: database
+    database_port: 9042
     tls:
       # Secrets must be manually created in the namespace.
       # - secretName: chart-example-tls
       #   hosts:
       #     - chart-example.local
-      
   resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
-  #requests:
-  #  cpu: 100m
-  #  memory: 128Mi
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    #requests:
+    #  cpu: 100m
+    #  memory: 128Mi
 
 cassandra:
   nameOverride: database
-
   config:
     cluster_name: database
     cluster_size: 1
-
   resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
-  #requests:
-  #  cpu: 100m
-  #  memory: 128Mi
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    #requests:
+    #  cpu: 100m
+    #  memory: 128Mi

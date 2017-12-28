@@ -1,0 +1,47 @@
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    app: {{ template "name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+    replicas: 1
+    template:
+        metadata:
+          labels:
+            app: {{ template "name" . }}
+            release: {{ .Release.Name }}
+        spec:
+            containers:
+            - name: {{ template "name" . }}
+              image: auth
+              imagePullPolicy: IfNotPresent
+              command:
+              - app
+              - host
+              env:
+              - name: SYSTEM_SECRET
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ template "fullname" . }}
+                    key: system.secret
+              - name: CLIENT_ID
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ template "fullname" . }}
+                    key: client.id
+              - name: CLIENT_SECRET
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ template "fullname" . }}
+                    key: client.secret
+              - name: DATABASE_URL
+                value: {{ .Release.Name }}-{{ .Values.config.database_name }}-0.{{ .Release.Name }}-{{ .Values.config.database_name }}:{{ .Values.config.database_port }}
+              readinessProbe:
+                httpGet:
+                  path: /monitor/readiness
+                  port: 8080
+                initialDelaySeconds: 5
