@@ -1,7 +1,13 @@
+{{- $serviceName := include "fullname" . -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: external-auth
+  name: {{ template "fullname" . }}
+  labels:
+    app: {{ template "fullname" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
   annotations:
       ingress.kubernetes.io/server-snippet: |
 
@@ -39,3 +45,7 @@ spec:
           serviceName: auth
           servicePort: 8080
         path: /oauth2
+  {{- if .Values.config.tls }}
+  tls:
+{{ toYaml .Values.config.tls | indent 4 }}
+  {{- end -}}
