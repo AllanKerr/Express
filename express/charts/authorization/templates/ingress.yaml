@@ -42,8 +42,8 @@ spec:
   - http:
       paths:
       - backend:
-          serviceName: auth
-          servicePort: 8080
+          serviceName: {{ template "fullname" . }}
+          servicePort: {{ .Values.config.ports.service }}
         path: /oauth2
   {{- if .Values.config.tls }}
   tls:

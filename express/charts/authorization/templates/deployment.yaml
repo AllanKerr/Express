@@ -39,9 +39,9 @@ spec:
                     name: {{ template "fullname" . }}
                     key: client.secret
               - name: DATABASE_URL
-                value: {{ .Release.Name }}-{{ .Values.config.database_name }}-0.{{ .Release.Name }}-{{ .Values.config.database_name }}:{{ .Values.config.database_port }}
+                value: {{ .Release.Name }}-{{ .Values.config.database_name }}-0.{{ .Release.Name }}-{{ .Values.config.database_name }}:{{ .Values.config.ports.database }}
               readinessProbe:
                 httpGet:
                   path: /monitor/readiness
-                  port: 8080
+                  port: {{ .Values.config.ports.deployment }}
                 initialDelaySeconds: 5

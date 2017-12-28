@@ -3,12 +3,13 @@
 # Declare variables to be passed into your templates.
 config:
   system_secret: 4683F9F226766DF9165B51B56988F749
-  client:
-    id: admin
-    secret: demo-password
-  config:
-    database_name: cassandra
-    database_port: 9042
+  client_id: admin
+  client_secret: demo-password
+  database_name: cassandra
+  ports:
+    database: 9042
+    service: 8080
+    deployment: 8080
   tls:
     # Secrets must be manually created in the namespace.
     # - secretName: chart-example-tls

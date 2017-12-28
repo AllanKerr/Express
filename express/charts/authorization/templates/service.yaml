@@ -10,8 +10,8 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 8080
-    targetPort: 8080
+  - port: {{ .Values.config.ports.service }}
+    targetPort: {{ .Values.config.ports.deployment }}
     protocol: TCP
   selector:
     app: {{ template "name" . }}
