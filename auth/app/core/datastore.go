@@ -1,7 +1,8 @@
 package core
 
 type DataStore interface {
-	CreateTable(schema string) error
+	CreateTable(object string) error
+	CreateSchema(schema Schema) error
 	GetSession()  interface{}
 	Close()
 }

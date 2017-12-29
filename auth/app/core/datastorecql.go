@@ -7,8 +7,11 @@ import (
 	"fmt"
 )
 
+const SchemaTimeout = 5*time.Second
+
 type CQLDataStore struct {
 	session *gocql.Session
+	cluster *gocql.ClusterConfig
 }
 
 func createCluster(host string) *gocql.ClusterConfig {
@@ -21,7 +24,15 @@ func createCluster(host string) *gocql.ClusterConfig {
 }
 
 func createTable(s *gocql.Session, table string) error {
-	if err := s.Query(table).RetryPolicy(nil).Exec(); err != nil {
+
+	q := s.Query(table)
+	defer q.Release()
+
+	if err := q.Exec(); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+			"table": table,
+		}).Error("Failed to create table.")
 		return err
 	}
 	return nil
@@ -31,6 +42,7 @@ func createKeyspace(cluster *gocql.ClusterConfig, keyspace string, replicationFa
 
 	c := *cluster
 	c.Keyspace = "system"
+	c.Timeout = SchemaTimeout
 	session, err := c.CreateSession()
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
@@ -47,44 +59,77 @@ func createKeyspace(cluster *gocql.ClusterConfig, keyspace string, replicationFa
 	}`, keyspace, replicationFactor))
 }
 
-func createSession(cluster *gocql.ClusterConfig, keyspace string, replicationFactor int) (*gocql.Session, error) {
+func createSession(cluster *gocql.ClusterConfig) (*gocql.Session, error) {
+	return cluster.CreateSession()
+}
+
+func createSessionAndKeyspace(cluster *gocql.ClusterConfig, keyspace string, replicationFactor int) (*gocql.Session, error) {
 
 	if err := createKeyspace(cluster, keyspace, replicationFactor); err != nil {
 		return nil, err
 	}
 	cluster.Keyspace = keyspace
-	return cluster.CreateSession()
+	return createSession(cluster)
 }
 
 func NewCQLDataStoreRetry(host string, keyspace string, replicationFactor int, interval int) *CQLDataStore {
 
     cluster := createCluster(host)
-	session, err := createSession(cluster, keyspace, replicationFactor)
+	session, err := createSessionAndKeyspace(cluster, keyspace, replicationFactor)
 	for err != nil {
 		logrus.WithField("error", err).Error("Failed to create a new CQL datastore.")
 		time.Sleep(time.Duration(interval) * time.Second)
-		session, err = createSession(cluster, keyspace, replicationFactor)
+		session, err = createSessionAndKeyspace(cluster, keyspace, replicationFactor)
 	}
-	ds := new(CQLDataStore)
-	ds.session = session
-	return ds
+	return &CQLDataStore {
+		session: session,
+		cluster: cluster,
+	}
 }
 
 func NewCQLDataStore(host string, keyspace string, replicationFactor int) (*CQLDataStore, error) {
 
 	cluster := createCluster(host)
-	session, err := createSession(cluster, keyspace, replicationFactor)
+	session, err := createSessionAndKeyspace(cluster, keyspace, replicationFactor)
 	if err != nil {
 		logrus.WithField("error", err).Fatal("Failed to create a new CQL datastore.")
 		return nil, err
 	}
-	ds := new(CQLDataStore)
-	ds.session = session
-	return ds, nil
+	return &CQLDataStore {
+		session: session,
+		cluster: cluster,
+	}, nil
 }
 
-func (ds *CQLDataStore) CreateTable(schema string) error {
-	return createTable( ds.session, schema)
+func (ds *CQLDataStore) CreateTable(object string) error {
+
+	// Create session with increased timeout for schema creation
+	ds.cluster.Timeout = SchemaTimeout
+	session, err := createSession(ds.cluster)
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	return createTable(session, object)
+}
+
+func (ds *CQLDataStore) CreateSchema(schema Schema) error {
+
+	// Create session with increased timeout for schema creation
+	ds.cluster.Timeout = SchemaTimeout
+	session, err := createSession(ds.cluster)
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	for _, object := range schema.GetObjects() {
+		if err := createTable(session, object); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (ds CQLDataStore) GetSession() interface{} {
