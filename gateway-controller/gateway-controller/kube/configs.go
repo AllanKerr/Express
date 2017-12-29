@@ -5,6 +5,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
+	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 )
 
 func DefaultServiceConfig() *apiv1.Service {
@@ -68,6 +69,21 @@ func DefaultAutoscalerConfig() *autoscalingv2beta1.HorizontalPodAutoscaler {
 		Spec: autoscalingv2beta1.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: autoscalingv2beta1.CrossVersionObjectReference{
 				Kind: "Deployment",
+			},
+		},
+	}
+}
+
+func DefaultIngressConfig() *extensionsv1beta1.Ingress {
+	return &extensionsv1beta1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{},
+		Spec: extensionsv1beta1.IngressSpec{
+			Rules: []extensionsv1beta1.IngressRule{
+				{
+					IngressRuleValue: extensionsv1beta1.IngressRuleValue{
+						HTTP: &extensionsv1beta1.HTTPIngressRuleValue {},
+					},
+				},
 			},
 		},
 	}

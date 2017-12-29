@@ -1,7 +1,6 @@
 package kube
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	"gopkg.in/fatih/set.v0"
 	"errors"
@@ -106,11 +105,6 @@ func (group *endpointGroup) getAnnotations(name string) map[string]string {
 // and port being the port the deployed service listens on
 func (group *endpointGroup) GetIngress(name string, port int32) *extensionsv1beta1.Ingress {
 
-	labels := map[string]string{
-		"app": name,
-		"identifier" : strconv.Itoa(group.getHashCode()),
-	}
-
 	backend := extensionsv1beta1.IngressBackend{
 		ServiceName: name,
 		ServicePort: intstr.FromInt(int(port)),
@@ -130,24 +124,18 @@ func (group *endpointGroup) GetIngress(name string, port int32) *extensionsv1bet
 	if !strings.HasSuffix(name, "-") {
 		prefix += "-"
 	}
-	return &extensionsv1beta1.Ingress{
-		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: prefix,
-			Labels: labels,
-			Annotations: group.getAnnotations(name),
-		},
-		Spec: extensionsv1beta1.IngressSpec{
-			Rules: []extensionsv1beta1.IngressRule{
-				{
-					IngressRuleValue: extensionsv1beta1.IngressRuleValue{
-						HTTP: &extensionsv1beta1.HTTPIngressRuleValue {
-							Paths: paths,
-						},
-					},
-				},
-			},
-		},
+
+	ingress := DefaultIngressConfig()
+
+	ingress.ObjectMeta.GenerateName = prefix
+	ingress.Annotations = group.getAnnotations(name)
+	ingress.Labels = map[string]string{
+		"app": name,
+		"identifier" : strconv.Itoa(group.getHashCode()),
 	}
+
+	ingress.Spec.Rules[0].HTTP.Paths = paths
+	return ingress
 }
 
 // unmarshalls a endpoints config file into an EndpointsConfig struct
