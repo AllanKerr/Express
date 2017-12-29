@@ -14,7 +14,7 @@ import (
 
 type Endpoint struct {
 	Path string     `yaml:"path"`
-	Scopes []interface{} `yaml:"scopes,omitempty"`
+	Scopes []string `yaml:"scopes,omitempty"`
 }
 
 type EndpointsConfig struct {
@@ -29,7 +29,6 @@ type endpointGroup struct {
 func (group *endpointGroup) append(path string) {
 	group.paths = append(group.paths, path)
 }
-
 
 func (group *endpointGroup) getScopes() string {
 
@@ -77,7 +76,7 @@ func (group *endpointGroup) getHashCode() int {
 func (group *endpointGroup) getAnnotations(name string) map[string]string {
 
 	var snippet string
-	if group.scopes != nil {
+	if group.scopes != nil && !group.scopes.IsEmpty() {
 		snippet += fmt.Sprintf(AuthSnippet, group.getScopes())
 	}
 	snippet += fmt.Sprintf(RewriteSnippet, name)
@@ -101,7 +100,7 @@ func (group *endpointGroup) GetIngress(name string, port int32) *extensionsv1bet
 	for _, path := range group.paths {
 
 		if !strings.HasPrefix(path, "/") {
-			path += "/"
+			path = "/" + path
 		}
 		paths = append(paths, extensionsv1beta1.HTTPIngressPath{
 			Backend: backend,
@@ -161,9 +160,11 @@ func ParseConfig(name string, port int32, contents []byte) ([]*extensionsv1beta1
 			defaultGroup.append(endpoint.Path)
 		} else {
 			hasGroup := false
+
+			scopes := stringSliceToInterfaceSlice(endpoint.Scopes)
 			for _, group := range groups {
 
-				if group.scopes.Has(endpoint.Scopes...) {
+				if group.scopes.Has(scopes...) {
 					group.append(endpoint.Path)
 					hasGroup = true
 					break
@@ -171,7 +172,7 @@ func ParseConfig(name string, port int32, contents []byte) ([]*extensionsv1beta1
 			}
 			if !hasGroup {
 				group := &endpointGroup{
-					scopes: set.New(endpoint.Scopes...),
+					scopes: set.New(scopes...),
 					paths: []string{endpoint.Path},
 				}
 				groups = append(groups, group)
@@ -188,4 +189,12 @@ func ParseConfig(name string, port int32, contents []byte) ([]*extensionsv1beta1
 		ingresses = append(ingresses, grp.GetIngress(name, port))
 	}
 	return ingresses, nil
+}
+
+func stringSliceToInterfaceSlice(strs []string) []interface{} {
+	s := make([]interface{}, len(strs))
+	for i, v := range strs {
+		s[i] = v
+	}
+	return s
 }
