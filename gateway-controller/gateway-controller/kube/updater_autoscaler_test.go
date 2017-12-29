@@ -7,7 +7,6 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	testify "github.com/stretchr/testify/mock"
 )
 
 func TestModifiers(t *testing.T) {
@@ -38,12 +37,10 @@ func TestModifiers(t *testing.T) {
 
 // Mock for simulating the autoscaler not being found
 type mockHorizontalPodAutoscalerNotFound struct {
-	testify.Mock
 	typedautoscalingv2beta1.HorizontalPodAutoscalerInterface
 }
 
 func (mock *mockHorizontalPodAutoscalerNotFound) Get(name string, options v1.GetOptions) (*v2beta1.HorizontalPodAutoscaler, error) {
-	mock.Called(name)
 	return nil, errors.NewNotFound(schema.GroupResource{}, "not found")
 }
 
@@ -53,16 +50,14 @@ func TestUpdateNotFound(t *testing.T) {
 
 	name := "testname"
 
-	mock := &mockHorizontalPodAutoscalerNotFound{}
-	mock.On("Get", name).
-		Return(nil, errors.NewNotFound(schema.GroupResource{}, "not found"))
-	updater := AutoscalerUpdater{mock}
+	updater := AutoscalerUpdater{
+		&mockHorizontalPodAutoscalerNotFound{},
+	}
 
 	err := updater.Update(name, &AutoscalerUpdate{})
 	if !errors.IsNotFound(err) {
 		t.Errorf("Unexpected error for not found %v", err)
 	}
-	mock.AssertCalled(t, "Get", "testname")
 }
 
 // Test updating with the wrong update type
