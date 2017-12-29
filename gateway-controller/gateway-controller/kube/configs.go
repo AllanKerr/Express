@@ -50,6 +50,9 @@ func DefaultDeploymentConfig() *appsv1beta2.Deployment {
 									Protocol:      apiv1.ProtocolTCP,
 								},
 							},
+							// sleep before stopping to give the Ingress controller
+							// enough time to detect the new set of deployments
+							// when doing zero downtime roll outs.
 							Lifecycle: &apiv1.Lifecycle{
 								PreStop: &apiv1.Handler{
 									Exec: &apiv1.ExecAction{
@@ -87,7 +90,9 @@ func DefaultAutoscalerConfig() *autoscalingv2beta1.HorizontalPodAutoscaler {
 // https://github.com/AllanKerr/Express/blob/master/docs/gateway/endpoints-file.md
 func DefaultIngressConfig() *extensionsv1beta1.Ingress {
 	return &extensionsv1beta1.Ingress{
-		ObjectMeta: metav1.ObjectMeta{},
+		ObjectMeta: metav1.ObjectMeta{
+			
+		},
 		Spec: extensionsv1beta1.IngressSpec{
 			Rules: []extensionsv1beta1.IngressRule{
 				{
