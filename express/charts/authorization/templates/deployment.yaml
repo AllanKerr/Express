@@ -17,7 +17,7 @@ spec:
         spec:
             containers:
             - name: {{ template "name" . }}
-              image: auth
+              image: allankerr/authorization
               imagePullPolicy: IfNotPresent
               command:
               - app
