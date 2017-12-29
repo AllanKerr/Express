@@ -4,6 +4,7 @@ import (
 	typedappsv1beta2 "k8s.io/client-go/kubernetes/typed/apps/v1beta2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
+	"errors"
 )
 
 type ContainerUpdate struct {
@@ -28,7 +29,10 @@ func (updater *DeploymentUpdater) GetModifiers() []string {
 
 func (updater *DeploymentUpdater) Update(name string, update interface{}) error {
 
-	containerUpdate := update.(*ContainerUpdate)
+	containerUpdate, ok := update.(*ContainerUpdate)
+	if !ok {
+		return errors.New("Unexpected update type, expected *ContainerUpdate")
+	}
 	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
 
 		result, getErr := updater.dInterface.Get(name, metav1.GetOptions{})
