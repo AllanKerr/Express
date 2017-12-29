@@ -71,7 +71,7 @@ func (adapter *DataStoreAdapter) createSession(sig string, req fosite.Requester,
 	session := adapter.getCqlSession()
 
 	// build the insert request to insert the session data
-	cols := qb.Insert("default.sessions").
+	cols := qb.Insert("authorization.sessions").
 		Columns("signature", "request_id", "requested_at", "client_id", "scopes", "granted_scopes", "session_data")
 	if ttl != NoTtl {
 		cols = cols.TTL()
@@ -104,7 +104,7 @@ func (adapter *DataStoreAdapter) getSession(sig string) (fosite.Requester, error
 	session := adapter.getCqlSession()
 
 	// build the select query to get the session
-	stmt, names := qb.Select("default.sessions").
+	stmt, names := qb.Select("authorization.sessions").
 		Where(qb.Eq("signature")).
 		ToCql()
 	q := gocqlx.Query(session.Query(stmt), names).BindMap(qb.M{
@@ -133,7 +133,7 @@ func (adapter *DataStoreAdapter) deleteSession(sig string) error {
 	session := adapter.getCqlSession()
 
 	// build the delete query for the tokens with the matching signature
-	stmt, names := qb.Delete("default.sessions").
+	stmt, names := qb.Delete("authorization.sessions").
 		Where(qb.Eq("signature")).
 		ToCql()
 	q := gocqlx.Query(session.Query(stmt), names).BindMap(qb.M{
@@ -170,7 +170,7 @@ func (adapter *DataStoreAdapter) CreateClient(client *Client) error {
 	}
 
 	// build the insert client query
-	stmt, names := qb.Insert("default.clients").
+	stmt, names := qb.Insert("authorization.clients").
 		Columns("id", "secret_hash", "redirect_uris", "grant_types", "response_types", "scopes", "public").
 		Unique().
 		ToCql()
@@ -192,7 +192,7 @@ func (adapter *DataStoreAdapter) GetClient(_ context.Context, id string) (fosite
 	session := adapter.getCqlSession()
 
 	// build the select query to get the client with its id
-	stmt, names := qb.Select("default.clients").
+	stmt, names := qb.Select("authorization.clients").
 		Where(qb.Eq("id")).
 		ToCql()
 	q := gocqlx.Query(session.Query(stmt), names).BindMap(qb.M{
@@ -218,7 +218,7 @@ func (adapter *DataStoreAdapter) UpdateClient(client *Client, column string) err
 
 	session := adapter.getCqlSession()
 
-	stmt, names := qb.Update("default.clients").
+	stmt, names := qb.Update("authorization.clients").
 		Set(column).
 		Where(qb.Eq("id")).
 		ToCql()
@@ -283,7 +283,7 @@ func (adapter *DataStoreAdapter) GetUser(ctx context.Context, name string) (User
 	session := adapter.getCqlSession()
 
 	// build the select request to get the user data fromt he data store
-	stmt, names := qb.Select("default.users").
+	stmt, names := qb.Select("authorization.users").
 		Where(qb.Eq("username")).
 		ToCql()
 	q := gocqlx.Query(session.Query(stmt), names).BindMap(qb.M{
@@ -319,7 +319,7 @@ func (adapter *DataStoreAdapter) revokeToken(requestID string) error {
 	session := adapter.getCqlSession()
 
 	// get the signatures for the tokens with requestID
-	stmt, names := qb.Select("default.sessions").
+	stmt, names := qb.Select("authorization.sessions").
 		Columns("signature").
 		Where(qb.Eq("request_id")).
 		ToCql()
@@ -346,7 +346,7 @@ func (adapter *DataStoreAdapter) revokeToken(requestID string) error {
 	}
 
 	// delete the tokens with the matching signatures
-	stmt, names = qb.Delete("default.sessions").
+	stmt, names = qb.Delete("authorization.sessions").
 		Where(qb.In("signature")).
 		ToCql()
 
@@ -386,7 +386,7 @@ func (adapter *DataStoreAdapter) CreateUser(user *DefaultUser) error {
 	}
 
 	// build the user insert query
-	stmt, names := qb.Insert("default.users").
+	stmt, names := qb.Insert("authorization.users").
 		Columns("username", "password_hash", "scopes").
 		Unique().
 		ToCql()
@@ -405,7 +405,7 @@ func (adapter *DataStoreAdapter) UpdateUser(user User, column string) error {
 
 	session := adapter.getCqlSession()
 
-	stmt, names := qb.Update("default.users").
+	stmt, names := qb.Update("authorization.users").
 		Set(column).
 		Where(qb.Eq("username")).
 		ToCql()
