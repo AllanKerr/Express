@@ -1,21 +1,5 @@
 #!/bin/bash
 
-INTERVAL=5
+minikube start --vm-driver=vmwarefusion --memory 5120 --cpus=4 -v 10
 
-minikube start --vm-driver=vmwarefusion --memory 5120 --cpus=4
-eval $(minikube docker-env)
-
-update_status(){
-	READY="$(docker ps -a | tail -n +2 | awk '$2 ~ /kube-addon-manager/ {print $2}')"
-}
-
-update_status
-while [[ -z "$READY" ]] ; do
-	echo "Install waiting on startup, trying again in $INTERVAL seconds."
-	sleep $INTERVAL
-	update_status
-done
-echo "Startup Finished."
-
-make -C "./gateway" install
-make -C "./auth" install
+# "/Applications/VMware Fusion.app/Contents/Library/vmrun" -gu docker -gp tcuser runScriptInGuest /Users/$USER/.minikube/machines/minikube/minikube.vmx /bin/sh "mkdir /home/docker/.ssh; cp /Users/$USER/.minikube/machines/minikube/id_rsa.pub /home/docker/.ssh/authorized_keys; chown -R docker:staff /home/docker/.ssh"
