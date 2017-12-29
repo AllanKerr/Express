@@ -64,11 +64,11 @@ const RewriteSnippet = `
 func (group *endpointGroup) getHashCode() int {
 
 	if group.scopes == nil {
-		return hashString("")
+		return HashString("")
 	}
 	var hashCode int
 	group.scopes.Each(func(item interface{}) bool {
-		hashCode ^= hashString(item.(string))
+		hashCode ^= HashString(item.(string))
 		return true
 	})
 	return hashCode

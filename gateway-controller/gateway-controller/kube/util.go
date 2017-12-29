@@ -9,7 +9,7 @@
 
 package kube
 
-func hashString(s string) int {
+func HashString(s string) int {
 	h := 0
 	for i := 0; i < len(s); i++ {
 		h = 31*h + int(s[i])
