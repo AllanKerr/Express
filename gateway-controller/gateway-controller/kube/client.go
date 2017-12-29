@@ -10,10 +10,23 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 )
 
+// A wrapper around the Kubernetes go-client library client structure
+// required to interact with the Kubernetes API.
 type Client struct {
 	*kubernetes.Clientset
 }
 
+/***************************************************************************************
+*    Authenticating outside the cluster
+*    Author: Marc Sluiter, David Xia, and Ahmet Alp Balkan
+*    Date: Dec. 29, 2017
+*    Code version: 6.0.0
+*    Availability: https://github.com/kubernetes/client-go/blob/master/examples/out-of-cluster-client-configuration/main.go
+*
+***************************************************************************************/
+
+// Creates a new client for interfacing with the Kubernetes API
+// Kubernetes must be setup on the local system or the kubeconfig will not be found
 func NewDefaultClient() (*Client, error) {
 
 	var kubeconfig *string
@@ -38,6 +51,7 @@ func NewDefaultClient() (*Client, error) {
 	return &Client{clientset}, nil
 }
 
+// The location of the home directory to find the kubeconfig
 func homeDir() string {
 	if h := os.Getenv("HOME"); h != "" {
 		return h
@@ -45,6 +59,7 @@ func homeDir() string {
 	return os.Getenv("USERPROFILE") // windows
 }
 
+// List the set of services that have been deployed using the Express deploy command
 func (client *Client) ListServices(namespace string) ([]apiv1.Service, error) {
 
 	sClient := client.CoreV1().Services(namespace)
