@@ -8,6 +8,8 @@ import (
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 )
 
+// The default Kubernetes service configuration that parameters are added
+// to when an application container is deployed
 func DefaultServiceConfig() *apiv1.Service {
 	 return &apiv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -24,6 +26,8 @@ func DefaultServiceConfig() *apiv1.Service {
 	}
 }
 
+// The default Kubernetes deployment configuration that parameters are added
+// to when an application container is deployed
 func DefaultDeploymentConfig() *appsv1beta2.Deployment {
 	return &appsv1beta2.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -61,6 +65,8 @@ func DefaultDeploymentConfig() *appsv1beta2.Deployment {
 	}
 }
 
+// The default Kubernetes autoscaler configuration that parameters are added
+// to when an application container is deployed
 func DefaultAutoscalerConfig() *autoscalingv2beta1.HorizontalPodAutoscaler {
 	return &autoscalingv2beta1.HorizontalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
@@ -74,6 +80,11 @@ func DefaultAutoscalerConfig() *autoscalingv2beta1.HorizontalPodAutoscaler {
 	}
 }
 
+// The default Kubernetes Ingress configuration that parameters are added
+// to when parsing an endpoint configuration file
+//
+// The file specification can be found here:
+// https://github.com/AllanKerr/Express/blob/master/docs/gateway/endpoints-file.md
 func DefaultIngressConfig() *extensionsv1beta1.Ingress {
 	return &extensionsv1beta1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{},
