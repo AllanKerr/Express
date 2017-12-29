@@ -5,6 +5,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 type AutoscalerUpdate struct {
@@ -32,7 +33,10 @@ func (updater *AutoscalerUpdater) GetModifiers() []string {
 
 func (updater *AutoscalerUpdater) Update(name string, update interface{}) error {
 
-	autoscalerUpdate := update.(*AutoscalerUpdate)
+	autoscalerUpdate, ok := update.(*AutoscalerUpdate)
+	if !ok {
+		return errors.New("Unexpected update type, expected AutoscalerUpdate")
+	}
 	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
 
 		result, getErr := updater.aInterface.Get(name, metav1.GetOptions{})
