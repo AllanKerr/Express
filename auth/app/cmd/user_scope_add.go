@@ -16,7 +16,7 @@ var cmdUserScopeAdd = &cobra.Command{
 
 		// start a new CQL session
 		databaseUrl := os.Getenv("DATABASE_URL")
-		ds, err := core.NewCQLDataStore(databaseUrl, "default")
+		ds, err := core.NewCQLDataStore(databaseUrl, "default", 3)
 		if err != nil {
 			fmt.Errorf("failed to create data store session %g", err)
 		}

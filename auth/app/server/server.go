@@ -10,7 +10,7 @@ import (
 func RunHost(config *oauth2.Config) {
 
 	databaseUrl := os.Getenv("DATABASE_URL")
-	ds := core.NewCQLDataStoreRetry(databaseUrl, "default", 5)
+	ds := core.NewCQLDataStoreRetry(databaseUrl, "default", 3, 5)
 	app := core.NewApp(ds, true, logrus.DebugLevel)
 	oauth2.NewController(app, config)
 	app.Start(8080)
