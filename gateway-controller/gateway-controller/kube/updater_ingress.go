@@ -17,7 +17,7 @@ type IngressUpdater struct {
 
 // Create a new updater to update the existing set of Ingress configurations in the specified namespace
 // for a deployed application container
-func NewIngressUpdater(client *Client, namespace string) *IngressUpdater {
+func NewIngressUpdater(client Client, namespace string) *IngressUpdater {
 	return &IngressUpdater{
 		client.ExtensionsV1beta1().Ingresses(namespace),
 		client.CoreV1().Services(namespace),

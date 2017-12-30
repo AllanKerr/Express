@@ -13,7 +13,7 @@ type DeploymentTransaction struct {
 }
 
 // Create a new transaction that operates on the specified namespace
-func NewDeploymentTransaction(client *Client, namespace string) *DeploymentTransaction {
+func NewDeploymentTransaction(client Client, namespace string) *DeploymentTransaction {
 	return &DeploymentTransaction{
 		client.AppsV1beta2().Deployments(namespace),
 	}

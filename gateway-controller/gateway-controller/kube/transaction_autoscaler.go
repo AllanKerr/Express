@@ -13,7 +13,7 @@ type AutoscalerTransaction struct {
 }
 
 // Create a new transaction that operates on the specified namespace
-func NewAutoscalerTransaction(client *Client, namespace string) *AutoscalerTransaction {
+func NewAutoscalerTransaction(client Client, namespace string) *AutoscalerTransaction {
 	return &AutoscalerTransaction{
 		client.AutoscalingV2beta1().HorizontalPodAutoscalers(namespace),
 	}

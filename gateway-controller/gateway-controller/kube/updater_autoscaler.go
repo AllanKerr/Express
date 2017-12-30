@@ -21,7 +21,7 @@ type AutoscalerUpdater struct {
 }
 
 // Create a new autoscaler updater to update an autoscaler on the specified namespace
-func NewAutoscalerUpdater(client *Client, namespace string) *AutoscalerUpdater {
+func NewAutoscalerUpdater(client Client, namespace string) *AutoscalerUpdater {
 	return &AutoscalerUpdater{
 		client.AutoscalingV2beta1().HorizontalPodAutoscalers(namespace),
 	}

@@ -20,7 +20,7 @@ type DeploymentUpdater struct {
 }
 
 // Create a new deployment updater to update a deployment on the specified namespace
-func NewDeploymentUpdater(client *Client, namespace string) *DeploymentUpdater {
+func NewDeploymentUpdater(client Client, namespace string) *DeploymentUpdater {
 	return &DeploymentUpdater{
 		client.AppsV1beta2().Deployments(namespace),
 	}

@@ -13,7 +13,7 @@ type ServiceTransaction struct {
 }
 
 // Create a new transaction that operates on the specified namespace
-func NewServiceTransaction(client *Client, namespace string) *ServiceTransaction {
+func NewServiceTransaction(client Client, namespace string) *ServiceTransaction {
 	return &ServiceTransaction{
 		client.CoreV1().Services(namespace),
 	}

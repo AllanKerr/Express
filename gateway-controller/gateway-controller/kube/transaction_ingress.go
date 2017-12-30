@@ -13,7 +13,7 @@ type IngressTransaction struct {
 }
 
 // Create a new transaction that operates on the specified namespace
-func NewIngressTransaction(client *Client, namespace string) *IngressTransaction {
+func NewIngressTransaction(client Client, namespace string) *IngressTransaction {
 	return &IngressTransaction{
 		iInterface: client.ExtensionsV1beta1().Ingresses(namespace),
 	}

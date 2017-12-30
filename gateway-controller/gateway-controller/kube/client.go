@@ -9,9 +9,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type Client interface {
+	kubernetes.Interface
+	ListApplications(namespace string) ([]Application, error)
+}
+
 // A wrapper around the Kubernetes go-client library client structure
 // required to interact with the Kubernetes API.
-type Client struct {
+type DefaultClient struct {
 	*kubernetes.Clientset
 }
 
@@ -26,7 +31,7 @@ type Client struct {
 
 // Creates a new client for interfacing with the Kubernetes API
 // Kubernetes must be setup on the local system or the kubeconfig will not be found
-func NewDefaultClient() (*Client, error) {
+func NewDefaultClient() (*DefaultClient, error) {
 
 	var kubeconfig *string
 	if home := homeDir(); home != "" {
@@ -47,7 +52,7 @@ func NewDefaultClient() (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Client{clientset}, nil
+	return &DefaultClient{clientset}, nil
 }
 
 // The location of the home directory to find the kubeconfig
@@ -60,7 +65,7 @@ func homeDir() string {
 
 
 // List the set of applications that have been deployed using the Express deploy command
-func (client *Client) ListApplications(namespace string) ([]Application, error) {
+func (client *DefaultClient) ListApplications(namespace string) ([]Application, error) {
 
 	sClient := client.CoreV1().Services(namespace)
 	services, err := sClient.List(metav1.ListOptions{

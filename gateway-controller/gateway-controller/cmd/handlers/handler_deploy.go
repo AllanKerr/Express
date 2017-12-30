@@ -12,12 +12,12 @@ import (
 
 type deployHandler struct {
 	name string
-	client *kube.Client
+	client kube.Client
 	transactions []kube.Transaction
 	err error
 }
 
-func newDeployHandler(client *kube.Client, name string) *deployHandler {
+func newDeployHandler(client kube.Client, name string) *deployHandler {
 	return &deployHandler{
 		name: name,
 		client: client,
