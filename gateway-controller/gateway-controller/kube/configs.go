@@ -91,7 +91,7 @@ func DefaultAutoscalerConfig() *autoscalingv2beta1.HorizontalPodAutoscaler {
 func DefaultIngressConfig() *extensionsv1beta1.Ingress {
 	return &extensionsv1beta1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
-			
+
 		},
 		Spec: extensionsv1beta1.IngressSpec{
 			Rules: []extensionsv1beta1.IngressRule{
