@@ -1,6 +1,6 @@
 FROM golang:alpine
 
-RUN apk add --update git
+RUN apk add --update git curl
 
 ADD ./app "$GOPATH/src/app"
 WORKDIR "$GOPATH/src/app"
