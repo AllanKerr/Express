@@ -18,6 +18,7 @@ type User interface {
 	AppendScope(scope string)
 }
 
+// Default implementation for the user interface
 type DefaultUser struct {
 	Username string
 	Password string
@@ -50,6 +51,7 @@ func (u *DefaultUser) AppendScope(scope string) {
 	u.Scopes = append(u.Scopes, scope)
 }
 
+// Creates a new user with starting scopes: offline and user
 func NewUser(username string, password string) *DefaultUser {
 	return &DefaultUser{
 		username,
