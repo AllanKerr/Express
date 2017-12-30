@@ -7,7 +7,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"os"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apiv1 "k8s.io/api/core/v1"
 )
 
 // A wrapper around the Kubernetes go-client library client structure
@@ -59,12 +58,24 @@ func homeDir() string {
 	return os.Getenv("USERPROFILE") // windows
 }
 
-// List the set of services that have been deployed using the Express deploy command
-func (client *Client) ListServices(namespace string) ([]apiv1.Service, error) {
+
+// List the set of applications that have been deployed using the Express deploy command
+func (client *Client) ListApplications(namespace string) ([]Application, error) {
 
 	sClient := client.CoreV1().Services(namespace)
 	services, err := sClient.List(metav1.ListOptions{
 		LabelSelector: "group=services",
 	})
-	return services.Items, err
+	if err != nil {
+		return nil, err
+	}
+	var applications []Application
+	for _, service := range services.Items {
+		applications = append(applications, &DefaultApplication{
+			name: service.GetName(),
+			port: service.Spec.Ports[0].Port,
+			creation: service.GetCreationTimestamp().Time,
+		})
+	}
+	return applications, nil
 }
