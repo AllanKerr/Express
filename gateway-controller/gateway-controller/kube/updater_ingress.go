@@ -9,11 +9,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
+// Updater to update the existing set of Ingress configurations for a deployed application container
 type IngressUpdater struct {
 	iInterface typedextensionsv1beta1.IngressInterface
 	sInterface 	typedapiv1.ServiceInterface
 }
 
+// Create a new updater to update the existing set of Ingress configurations in the specified namespace
+// for a deployed application container
 func NewIngressUpdater(client *Client, namespace string) *IngressUpdater {
 	return &IngressUpdater{
 		client.ExtensionsV1beta1().Ingresses(namespace),
@@ -21,6 +24,7 @@ func NewIngressUpdater(client *Client, namespace string) *IngressUpdater {
 	}
 }
 
+// Set the service port for all paths in an Ingress configuration
 func setPort(ingress *extensionsv1beta1.Ingress, port int32) {
 	for i, path := range ingress.Spec.Rules[0].HTTP.Paths {
 		path.Backend.ServicePort = intstr.FromInt(int(port))
@@ -28,6 +32,8 @@ func setPort(ingress *extensionsv1beta1.Ingress, port int32) {
 	}
 }
 
+// Find an Ingress configuration within a slice of configurations based on its identifier label
+// If the Ingress configuration is found then it is removed from the slice
 func findAndRemove(ingress *extensionsv1beta1.Ingress, ingresses []extensionsv1beta1.Ingress) (bool, []extensionsv1beta1.Ingress) {
 
 	identifier := ingress.Labels["identifier"]
@@ -41,6 +47,8 @@ func findAndRemove(ingress *extensionsv1beta1.Ingress, ingresses []extensionsv1b
 	return false, ingresses
 }
 
+// Determines the port that should be routed to by getting
+// the port for the deployed application container's service
 func (updater *IngressUpdater) getPort(name string) (int32, error) {
 	if service, err := updater.sInterface.Get(name, metav1.GetOptions{}); err != nil {
 		return 0, err
@@ -49,6 +57,7 @@ func (updater *IngressUpdater) getPort(name string) (int32, error) {
 	}
 }
 
+// Get the set of Ingress configurations that exist for a deployed application
 func (updater *IngressUpdater) getIngresses(name string) ([]extensionsv1beta1.Ingress, error) {
 	ingressList, err := updater.iInterface.List(metav1.ListOptions{
 		LabelSelector: "app=" + name,
@@ -59,6 +68,7 @@ func (updater *IngressUpdater) getIngresses(name string) ([]extensionsv1beta1.In
 	return ingressList.Items, nil
 }
 
+// Delete the slice of Ingress configurations
 func (updater *IngressUpdater) deleteIngresses(ingresses []extensionsv1beta1.Ingress) error {
 
 	deletePolicy := metav1.DeletePropagationForeground
@@ -72,12 +82,15 @@ func (updater *IngressUpdater) deleteIngresses(ingresses []extensionsv1beta1.Ing
 	return err
 }
 
+// The list of modifiers that will result in an Ingress update
 func (updater *IngressUpdater) GetModifiers() []string {
 	return []string{
 		"endpoint-config",
 	}
 }
 
+// Performs an update on the existing Ingress configuration with the specified name
+// The update value must be a []*Ingress for the set of Ingresses to be updated to.
 func (updater *IngressUpdater) Update(name string, update interface{}) error {
 
 	port, portErr := updater.getPort(name)
@@ -98,16 +111,20 @@ func (updater *IngressUpdater) Update(name string, update interface{}) error {
 
 		var err error
 		if found {
+			// update the Ingress configuration if there is already an Ingress
+			// configuration with a matching identifier
 			err = retry.RetryOnConflict(retry.DefaultRetry, func() error {
 				_, updateErr := updater.iInterface.Update(ingress)
 				return updateErr
 			})
 		} else {
+			// there is no existing Ingress configuration for the identifier so create one
 			_, err = updater.iInterface.Create(ingress)
 		}
 		if err != nil {
 			return err
 		}
 	}
+	// delete any existing Ingress configurations that did not exist in the Ingress update set
 	return updater.deleteIngresses(ingresses)
 }
