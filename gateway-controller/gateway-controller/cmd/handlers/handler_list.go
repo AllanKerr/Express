@@ -12,7 +12,7 @@ import (
 
 // Print a list of applications in a tab delimited table
 func printApplications(w io.Writer, apps []kube.Application) {
-	
+
 	fmt.Fprintln(w, "NAME\tPORT\tCREATION\t")
 	for _, app := range apps {
 		fmt.Fprintf(w, "%v\t", app.GetName())
@@ -27,6 +27,7 @@ func (ch *CommandHandler) List(command *cobra.Command, args []string) {
 	applications, err := ch.Client.ListApplications(apiv1.NamespaceDefault)
 	if err != nil {
 		fmt.Printf("Unable to list applications: %v\n", err)
+		return
 	}
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 0, 0, 4, ' ', 0)
