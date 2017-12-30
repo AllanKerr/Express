@@ -9,6 +9,8 @@ import (
 	"github.com/pborman/uuid"
 )
 
+// Store OAuth2 token sessions
+// Used for both access and refresh tokens
 type Session struct {
 	Signature string
 	RequestId string
@@ -20,6 +22,7 @@ type Session struct {
 	SessionData []byte
 }
 
+// Create a new session from the specified signature and request
 func NewSession(sig string, req fosite.Requester) (*Session, error) {
 
 	sessionData, err := json.Marshal(req.GetSession())
@@ -33,7 +36,6 @@ func NewSession(sig string, req fosite.Requester) (*Session, error) {
 		ClientId: req.GetClient().GetID(),
 		Scopes: []string(req.GetRequestedScopes()),
 		GrantedScopes: []string(req.GetGrantedScopes()),
-		FormData: req.GetRequestForm(),
 		SessionData: sessionData,
 	}, nil
 }
@@ -55,6 +57,8 @@ func (s *Session) GetRequestedAt() time.Time {
 	return s.RequestedAt
 }
 
+// Returns the client used to create the token session
+// Only the client ID is guaranteed to be non-nil
 func (s *Session) GetClient() fosite.Client {
 	return &Client{
 		Id:s.ClientId,
@@ -97,6 +101,8 @@ func (s *Session) GrantScope(scope string) {
 	s.GrantedScopes = append(s.GrantedScopes, scope)
 }
 
+// Get the session data
+// Returns nil if an error occurs during unmarshalling
 func (s *Session) GetSession() fosite.Session {
 
 	if s.SessionData == nil {
@@ -110,6 +116,8 @@ func (s *Session) GetSession() fosite.Session {
 	return &session
 }
 
+// Set the session data
+// No update is performed if marshalling fails
 func (s *Session) SetSession(session fosite.Session) {
 
 	var sessionData []byte
@@ -126,10 +134,16 @@ func (s *Session) SetSession(session fosite.Session) {
 	s.SessionData = sessionData
 }
 
+// Get the HTTP form data associated with the session
+// The request form is not persisted meaning it will be nil
+// if the session was loaded from the datastore
 func (s *Session) GetRequestForm() url.Values {
 	return s.FormData
 }
 
+// Merge the request into the current session by
+// combining the request and granted scopes and using the
+// new requests client and session
 func (s *Session)Merge(requester fosite.Requester) {
 
 	for _, scope := range requester.GetRequestedScopes() {
