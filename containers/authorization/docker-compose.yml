@@ -26,7 +26,7 @@ services:
       dockerfile: Dockerfile-test
     links:
       - cassandra
-    command: go test ./...
+    command: go test --cover ./...
     environment:
       - SYSTEM_SECRET=4683F9F226766DF9165B51B56988F749
       - CLIENT_ID=admin

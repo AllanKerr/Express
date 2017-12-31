@@ -18,7 +18,7 @@ func createTestSchema(t *testing.T) (Schema, []string, error) {
 	var tables []string
 
 	table1 := `
-	CREATE TABLE "test_schema_table" (
+	CREATE TABLE IF NOT EXISTS "test_schema_table" (
     	key text PRIMARY KEY,
     	collection set<text>,
 	);
@@ -26,7 +26,7 @@ func createTestSchema(t *testing.T) (Schema, []string, error) {
 	tables = append(tables, table1)
 
 	table2 := `
-	CREATE TABLE "test_schema_table_2" (
+	CREATE TABLE IF NOT EXISTS "test_schema_table_2" (
     	key int PRIMARY KEY,
     	item text
 	);
