@@ -7,18 +7,20 @@ import (
 	"os"
 )
 
+func CreateSchema(ds core.DataStore) error {
+	schema, err := core.NewCqlSchema("schemas")
+	if err != nil {
+		return err
+	}
+	return ds.CreateSchema(schema);
+}
+
 func RunHost(config *oauth2.Config) {
 
 	databaseUrl := os.Getenv("DATABASE_URL")
-
-
 	ds := core.NewCQLDataStoreRetry(databaseUrl, "authorization", 3, 5)
 
-	schema, err := core.NewCqlSchema("schemas")
-	if err != nil {
-		logrus.WithField("error", err).Error("Failed to create schema.")
-	}
-	if err := ds.CreateSchema(schema); err != nil {
+	if err := CreateSchema(ds); err != nil {
 		logrus.WithField("error", err).Error("Failed to create schema.")
 	}
 
