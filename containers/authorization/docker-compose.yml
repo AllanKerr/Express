@@ -22,33 +22,15 @@ services:
 
   authorization:
     build:
-      context: ..
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile-test
     links:
       - cassandra
-    command: app host
+    command: go test ./...
     environment:
       - SYSTEM_SECRET=4683F9F226766DF9165B51B56988F749
       - CLIENT_ID=admin
       - CLIENT_SECRET=demo-password
       - DATABASE_URL=cassandra:9042
-    healthcheck:
-      test: ["CMD", "curl", "http://localhost:8080/monitor/readiness"]
-      interval: 5s
-      timeout: 1s
-      retries: 500
     ports:
       - "8080:8080"
-    logging:
-      driver: "none"
-
-  integration:
-    command: go test
-    build:
-      context: .
-      dockerfile: Dockerfile
-    links:
-      - authorization
-    depends_on:
-      authorization:
-        condition: service_healthy
