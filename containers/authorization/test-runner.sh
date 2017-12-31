@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker-compose up --abort-on-container-exit
+ docker-compose up --build --force-recreate --abort-on-container-exit
