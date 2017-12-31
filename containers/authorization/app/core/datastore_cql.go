@@ -7,13 +7,16 @@ import (
 	"fmt"
 )
 
+// increased timeout for creating tables and keyspaces
 const SchemaTimeout = 5*time.Second
 
+// data store for accessing the Cassandra session and cluster
 type CQLDataStore struct {
 	session *gocql.Session
 	cluster *gocql.ClusterConfig
 }
 
+// create a new cluster on the specified host
 func createCluster(host string) *gocql.ClusterConfig {
 
 	logrus.WithField("host", host).Info("Creating new CQL session.")
@@ -23,6 +26,8 @@ func createCluster(host string) *gocql.ClusterConfig {
 	return cluster
 }
 
+// create a new table with the specified session and CQL table query
+// table may also be a query with no output like delete or update
 func createTable(s *gocql.Session, table string) error {
 
 	q := s.Query(table)
@@ -38,11 +43,14 @@ func createTable(s *gocql.Session, table string) error {
 	return nil
 }
 
+// create a new keyspace on the specified cluster
 func createKeyspace(cluster *gocql.ClusterConfig, keyspace string, replicationFactor int) error {
 
 	c := *cluster
 	c.Keyspace = "system"
+	// increase timeout for keyspace creation to avoid timeout
 	c.Timeout = SchemaTimeout
+
 	session, err := c.CreateSession()
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
@@ -53,16 +61,20 @@ func createKeyspace(cluster *gocql.ClusterConfig, keyspace string, replicationFa
 	}
 	defer session.Close()
 
+	// create the keyspace
 	return createTable(session, fmt.Sprintf(`CREATE KEYSPACE IF NOT EXISTS "%s" WITH replication = {
 		'class' : 'SimpleStrategy',
 		'replication_factor' : %d
 	}`, keyspace, replicationFactor))
 }
 
+// create a session for interacting with the cluster
 func createSession(cluster *gocql.ClusterConfig) (*gocql.Session, error) {
 	return cluster.CreateSession()
 }
 
+// create session on the specified keyspace
+// the keyspace will be created if it does not already exist
 func createSessionAndKeyspace(cluster *gocql.ClusterConfig, keyspace string, replicationFactor int) (*gocql.Session, error) {
 
 	if err := createKeyspace(cluster, keyspace, replicationFactor); err != nil {
@@ -72,6 +84,8 @@ func createSessionAndKeyspace(cluster *gocql.ClusterConfig, keyspace string, rep
 	return createSession(cluster)
 }
 
+// create a new CQL data store for interacting with the database at the host path on the specified keyspace
+// If creation fails then it will be retried every interval until it succeeds.
 func NewCQLDataStoreRetry(host string, keyspace string, replicationFactor int, interval int) *CQLDataStore {
 
     cluster := createCluster(host)
@@ -87,6 +101,8 @@ func NewCQLDataStoreRetry(host string, keyspace string, replicationFactor int, i
 	}
 }
 
+// Create a new CQL data store for interacting with the database at the host path on the specified keyspace.
+// If creation fails, the error is returned.
 func NewCQLDataStore(host string, keyspace string, replicationFactor int) (*CQLDataStore, error) {
 
 	cluster := createCluster(host)
@@ -101,6 +117,8 @@ func NewCQLDataStore(host string, keyspace string, replicationFactor int) (*CQLD
 	}, nil
 }
 
+// Create a new table in the current Cassandra session.
+// Object may be a table, keyspace, update, or delete query.
 func (ds *CQLDataStore) CreateTable(object string) error {
 
 	// Create session with increased timeout for schema creation
@@ -114,6 +132,11 @@ func (ds *CQLDataStore) CreateTable(object string) error {
 	return createTable(session, object)
 }
 
+// Create a new CQL schema by creating all objects in the
+// schema for the current Cassandra session.
+// If any of the creations fail, the error is immediately returned.
+// This is not atomic and failure may result in the schema being
+// partially created.
 func (ds *CQLDataStore) CreateSchema(schema Schema) error {
 
 	// Create session with increased timeout for schema creation
@@ -132,10 +155,12 @@ func (ds *CQLDataStore) CreateSchema(schema Schema) error {
 	return nil
 }
 
-func (ds CQLDataStore) GetSession() interface{} {
+// Get the session for interacting with the Cassandra database
+func (ds *CQLDataStore) GetSession() interface{} {
 	return ds.session
 }
 
-func (ds CQLDataStore) Close() {
+// Close the current session.
+func (ds *CQLDataStore) Close() {
 	ds.session.Close()
 }
