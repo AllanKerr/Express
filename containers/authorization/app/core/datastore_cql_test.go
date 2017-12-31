@@ -63,3 +63,16 @@ func TestCQLDataStore_CreateTable(t *testing.T) {
 		}
 	}
 }
+
+func TestCQLDataStore_CreateSchema(t *testing.T) {
+
+	schema, _, err := createTestSchema(t)
+	if err != nil {
+		t.Errorf("Error creating test schema: %v", err)
+	}
+
+	err = datastore.CreateSchema(schema)
+	if err != nil {
+		t.Errorf("Error creating schema: %v", err)
+	}
+}

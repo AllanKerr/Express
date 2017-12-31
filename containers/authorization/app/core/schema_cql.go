@@ -6,14 +6,17 @@ import (
 	"strings"
 )
 
+// A CQL schema for creating a set of Cassandra objects
 type CqlSchema struct {
 	objects []string
 }
 
+// The array of objects in the schema
 func (schema *CqlSchema) GetObjects() []string {
 	return schema.objects
 }
 
+// The path for a file from its directory and file info
 func getPath(dir string, file os.FileInfo) string {
 	if !strings.HasSuffix(dir, "/") {
 		dir += "/"
@@ -21,10 +24,13 @@ func getPath(dir string, file os.FileInfo) string {
 	return dir + file.Name()
 }
 
+// Test whether a file is a schema file meaning it has a CQL extension
+// and isn't a directory
 func isObject(file os.FileInfo) bool {
 	return !file.IsDir() && strings.HasSuffix(file.Name(), ".cql")
 }
 
+// Read the schema objects in the provided directory
 func readObjects(dir string) ([]string, error) {
 
 	files, err := ioutil.ReadDir(dir)
@@ -46,6 +52,7 @@ func readObjects(dir string) ([]string, error) {
 	return objects, nil
 }
 
+// Create a new schema from the CQL files in the specified directory
 func NewCqlSchema(dir string) (*CqlSchema, error) {
 
 	objects, err := readObjects(dir)
