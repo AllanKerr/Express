@@ -293,8 +293,13 @@ func (adapter *DataStoreAdapter) GetUser(ctx context.Context, name string) (User
 
 	var u DefaultUser
 	if err := gocqlx.Get(&u, q.Query); err != nil {
-		logrus.WithField("error", err).Error("failed to get user")
-		return nil, errors.WithStack(fosite.ErrRequestUnauthorized)
+
+		if err == gocql.ErrNotFound {
+			err = fosite.ErrNotFound
+		} else {
+			logrus.WithField("error", err).Error("failed to get user")
+		}
+		return nil, errors.WithStack(err)
 	}
 	return &u, nil
 }
