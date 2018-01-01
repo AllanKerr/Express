@@ -135,8 +135,6 @@ func (ds *CQLDataStore) CreateTable(object string) error {
 // Create a new CQL schema by creating all objects in the
 // schema for the current Cassandra session.
 // If any of the creations fail, the error is immediately returned.
-// This is not atomic and failure may result in the schema being
-// partially created.
 func (ds *CQLDataStore) CreateSchema(schema Schema) error {
 
 	// Create session with increased timeout for schema creation
@@ -155,12 +153,10 @@ func (ds *CQLDataStore) CreateSchema(schema Schema) error {
 	return nil
 }
 
-// Get the session for interacting with the Cassandra database
 func (ds *CQLDataStore) GetSession() interface{} {
 	return ds.session
 }
 
-// Close the current session.
 func (ds *CQLDataStore) Close() {
 	ds.session.Close()
 }
