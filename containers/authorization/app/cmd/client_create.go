@@ -8,28 +8,36 @@ import (
 	"os"
 )
 
+func createClient(clientId string, clientSecret string, public bool) error {
+
+	databaseUrl := os.Getenv("DATABASE_URL")
+	ds, err := core.NewCQLDataStore(databaseUrl, "authorization", 3)
+	if err != nil {
+		return err
+	}
+	defer ds.Close()
+
+	client := oauth2.NewClient(clientId, clientSecret, public)
+
+	adapter := oauth2.NewDataStoreAdapter(ds, config.GetHasher())
+	if err := adapter.CreateClient(client); err != nil {
+		return err
+	}
+	return nil
+}
+
 var cmdClientCreate = &cobra.Command{
 	Use:   "create <id> <secret>",
 	Short: "Creates a new OAuth2 client",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 
-		// start a new CQL session
-		databaseUrl := os.Getenv("DATABASE_URL")
-		ds, err := core.NewCQLDataStore(databaseUrl, "authorization", 3)
-		if err != nil {
-			fmt.Errorf("failed to create data store session %g", err)
-		}
-		defer ds.Close()
-
 		public, _ := cmd.Flags().GetBool("public")
-		client := oauth2.NewClient(args[0], args[1], public)
-
-		adapter := oauth2.NewDataStoreAdapter(ds, config.GetHasher())
-		if err := adapter.CreateClient(client); err != nil {
-			fmt.Errorf("failed to create client %g", err)
+		if err := createClient(args[0], args[1], public); err != nil {
+			fmt.Errorf("failed to create client %v", err)
+			return
 		}
-		fmt.Println("client_id: " + client.Id + "\nclient_secret: " + client.Secret)
+		fmt.Println("client_id: " + args[0] + "\nclient_secret: " + args[1])
 	},
 }
 
