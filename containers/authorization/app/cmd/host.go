@@ -10,7 +10,7 @@ var hostCmd = &cobra.Command{
 	Use:   "host",
 	Short: "Start the HTTP auth service",
 	Run: func(cmd *cobra.Command, args []string) {
-		server.RunHost(config)
+		server.Initialize(config).Run()
 	},
 }
 

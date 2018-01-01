@@ -7,6 +7,10 @@ import (
 	"os"
 )
 
+type Server struct {
+	app *core.App
+}
+
 func CreateSchema(ds core.DataStore) error {
 	schema, err := core.NewCqlSchema("schemas")
 	if err != nil {
@@ -15,7 +19,7 @@ func CreateSchema(ds core.DataStore) error {
 	return ds.CreateSchema(schema);
 }
 
-func RunHost(config *oauth2.Config) {
+func Initialize(config *oauth2.Config) *Server {
 
 	databaseUrl := os.Getenv("DATABASE_URL")
 	ds := core.NewCQLDataStoreRetry(databaseUrl, "authorization", 3, 5)
@@ -26,5 +30,12 @@ func RunHost(config *oauth2.Config) {
 
 	app := core.NewApp(ds, true, logrus.DebugLevel)
 	oauth2.NewController(app, config)
-	app.Start(8080)
+
+	return &Server{
+		app: app,
+	}
+}
+
+func (server *Server) Run() {
+	server.app.Start(8080)
 }
