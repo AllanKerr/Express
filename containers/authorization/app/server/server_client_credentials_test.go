@@ -2,9 +2,7 @@ package server
 
 import (
 	"net/url"
-	"net/http/httptest"
 	"net/http"
-	"encoding/json"
 	"testing"
 )
 
