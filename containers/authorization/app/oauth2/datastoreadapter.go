@@ -100,6 +100,9 @@ func (adapter *DataStoreAdapter) createSession(sig string, req fosite.Requester,
 func (adapter *DataStoreAdapter) getSession(sig string) (fosite.Requester, error) {
 
 	logrus.WithField("signature",sig).Debug("getting session")
+	if sig == "" {
+		return nil, errors.WithStack(fosite.ErrNotFound)
+	}
 
 	session := adapter.getCqlSession()
 
