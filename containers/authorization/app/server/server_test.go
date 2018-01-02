@@ -174,3 +174,25 @@ func Test_Token_noGrant(t*testing.T) {
 		t.Errorf("Error, unexpected access token: %v", body)
 	}
 }
+
+func Test_Token_UnsupportedGrant(t*testing.T) {
+
+	// build token request
+	r, _ := http.NewRequest("POST", "/oauth2/token",  nil)
+
+	// build body
+	form := url.Values{}
+	form.Add("grant_type", "implicit")
+
+	code, body, err := testTokenRequest(r, form)
+	if err != nil {
+		t.Errorf("Error during request: %v", err)
+	}
+
+	if code != http.StatusBadRequest {
+		t.Errorf("Error, unexpected response status: %v", code)
+	}
+	if _, ok := body["access_token"]; ok {
+		t.Errorf("Error, unexpected access token: %v", body)
+	}
+}
