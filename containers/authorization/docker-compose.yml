@@ -26,7 +26,7 @@ services:
       dockerfile: Dockerfile-test
     links:
       - cassandra
-    command: go test --cover ./...
+    command: sh -c "go test --cover ./cmd && go test --cover ./core && go test --coverpkg=./oauth2 ./server"
     environment:
       - SYSTEM_SECRET=4683F9F226766DF9165B51B56988F749
       - CLIENT_ID=admin
