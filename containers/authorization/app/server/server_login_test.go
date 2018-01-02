@@ -1,22 +1,13 @@
 package server
 
 import (
-	"net/url"
 	"testing"
 	"net/http"
 )
 
 func Test_Token_Login(t*testing.T) {
 
-	// build token request
-	r, _ := http.NewRequest("POST", "/oauth2/login",  nil)
-
-	// build body
-	form := url.Values{}
-	form.Add("username", "user")
-	form.Add("password", "password")
-
-	code, body, err := testLoginRequest(r, form)
+	code, body, err := login("user", "password")
 	if err != nil {
 		t.Errorf("Error during login request: %v", err)
 	}
@@ -29,5 +20,29 @@ func Test_Token_Login(t*testing.T) {
 	}
 	if !validateToken(body["refresh_token"].(string)) {
 		t.Errorf("Error, invalid or missing refresh token")
+	}
+}
+
+func Test_Token_InvalidPasswordLogin(t*testing.T) {
+
+	code, _, err := login("user", "wrong")
+	if err != nil {
+		t.Errorf("Error during login request: %v", err)
+	}
+
+	if code != http.StatusUnauthorized {
+		t.Errorf("Error, unexpected response status: %v", code)
+	}
+}
+
+func Test_Token_InvalidUsernameLogin(t*testing.T) {
+
+	code, _, err := login("wronguser", "wrong")
+	if err != nil {
+		t.Errorf("Error during login request: %v", err)
+	}
+
+	if code != http.StatusUnauthorized {
+		t.Errorf("Error, unexpected response status: %v", code)
 	}
 }

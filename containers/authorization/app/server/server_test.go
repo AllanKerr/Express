@@ -45,10 +45,26 @@ func validateToken(token string) bool {
 	return code == http.StatusOK
 }
 
+func login(username string, password string)  (int, map[string]interface{}, error) {
+
+	r, _ := http.NewRequest("POST", "/oauth2/login",  nil)
+
+	// build body
+	form := url.Values{}
+	form.Add("username", username)
+	form.Add("password", password)
+
+	return testLoginRequest(r, form)
+}
+
 var server *Server
 
 func testLoginRequest(r *http.Request, form url.Values) (int, map[string]interface{}, error) {
 	return testRequest(r, form, server.authController.Submit)
+}
+
+func testRegisterRequest(r *http.Request, form url.Values) (int, map[string]interface{}, error) {
+	return testRequest(r, form, server.authController.SubmitRegistration)
 }
 
 func testTokenRequest(r *http.Request, form url.Values) (int, map[string]interface{}, error) {
