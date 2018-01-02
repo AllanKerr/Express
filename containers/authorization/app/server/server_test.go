@@ -47,6 +47,10 @@ func validateToken(token string) bool {
 
 var server *Server
 
+func testLoginRequest(r *http.Request, form url.Values) (int, map[string]interface{}, error) {
+	return testRequest(r, form, server.authController.Submit)
+}
+
 func testTokenRequest(r *http.Request, form url.Values) (int, map[string]interface{}, error) {
 	return testRequest(r, form, server.authController.Token)
 }
