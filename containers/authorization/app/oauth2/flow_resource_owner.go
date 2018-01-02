@@ -70,9 +70,9 @@ func (c *ResourceOwnerPasswordCredentialsGrantHandler) HandleTokenEndpointReques
 	} else if err != nil {
 		return errors.WithStack(fosite.ErrServerError.WithDebug(err.Error()))
 	}
-	// Enforce client authentication
+	// Enforce user authentication
 	if err := c.Hasher.Compare(user.GetHashedPassword(), []byte(password)); err != nil {
-		return errors.WithStack(fosite.ErrUnauthorizedClient)
+		return errors.WithStack(fosite.ErrRequestUnauthorized)
 	}
 	ses, ok := request.GetSession().(*fosite.DefaultSession)
 	if !ok {
