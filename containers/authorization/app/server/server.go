@@ -9,6 +9,7 @@ import (
 
 type Server struct {
 	app *core.App
+	authController *oauth2.HTTPController
 }
 
 func CreateSchema(ds core.DataStore) error {
@@ -29,10 +30,10 @@ func Initialize(config *oauth2.Config) *Server {
 	}
 
 	app := core.NewApp(ds, true, logrus.DebugLevel)
-	oauth2.NewController(app, config)
 
 	return &Server{
 		app: app,
+		authController: oauth2.NewController(app, config),
 	}
 }
 
