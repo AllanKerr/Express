@@ -5,6 +5,7 @@ import (
 	"github.com/ory/fosite"
 )
 
+// HTTP handler for revoking OAuth2 access and/or refresh tokens
 func (ctrl *HTTPController) Revoke(w http.ResponseWriter, req *http.Request) {
 
 	ctx := fosite.NewContext()

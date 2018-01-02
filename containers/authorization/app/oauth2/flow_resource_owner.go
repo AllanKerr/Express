@@ -12,6 +12,15 @@ import (
 	"github.com/ory/fosite"
 )
 
+
+/***************************************************************************************
+*    Fosite
+*    Author: Ory
+*    Date: Jan. 1, 2017
+*    Code version: 0.16.1
+*    https://github.com/ory/fosite/blob/2aa8e70bb88aa6bafde8d4ea949c5d514c6f568e/handler/oauth2/flow_resource_owner.go
+*
+***************************************************************************************/
 func OAuth2ResourceOwnerPasswordCredentialsFactory(hasher fosite.Hasher) (func(*compose.Config,interface{},interface{}) interface{}) {
 
 	return func(config *compose.Config, storage interface{}, strategy interface{}) interface{} {
@@ -34,7 +43,14 @@ func OAuth2ResourceOwnerPasswordCredentialsFactory(hasher fosite.Hasher) (func(*
 }
 
 
-
+/***************************************************************************************
+*    Fosite
+*    Author: Ory
+*    Date: Jan. 1, 2017
+*    Code version: 0.16.1
+*    https://github.com/ory/fosite/blob/2aa8e70bb88aa6bafde8d4ea949c5d514c6f568e/handler/oauth2/flow_resource_owner.go
+*
+***************************************************************************************/
 type ResourceOwnerPasswordCredentialsGrantHandler struct {
 	// ResourceOwnerPasswordCredentialsGrantStorage is used to persist session data across requests.
 	ResourceOwnerPasswordCredentialsGrantStorage ResourceOwnerPasswordCredentialsGrantStorage
@@ -46,6 +62,15 @@ type ResourceOwnerPasswordCredentialsGrantHandler struct {
 	*oauth2.HandleHelper
 }
 
+/***************************************************************************************
+*    Fosite
+*    Author: Ory
+*    Date: Jan. 1, 2017
+*    Code version: 0.16.1
+*    https://github.com/ory/fosite/blob/2aa8e70bb88aa6bafde8d4ea949c5d514c6f568e/handler/oauth2/flow_resource_owner.go
+*
+***************************************************************************************/
+// Modified handler to attach the username to the session
 // HandleTokenEndpointRequest implements https://tools.ietf.org/html/rfc6749#section-4.3.2
 func (c *ResourceOwnerPasswordCredentialsGrantHandler) HandleTokenEndpointRequest(ctx context.Context, request fosite.AccessRequester) error {
 	// grant_type REQUIRED.
@@ -94,6 +119,14 @@ func (c *ResourceOwnerPasswordCredentialsGrantHandler) HandleTokenEndpointReques
 	return nil
 }
 
+/***************************************************************************************
+*    Fosite
+*    Author: Ory
+*    Date: Jan. 1, 2017
+*    Code version: 0.16.1
+*    https://github.com/ory/fosite/blob/2aa8e70bb88aa6bafde8d4ea949c5d514c6f568e/handler/oauth2/flow_resource_owner.go
+*
+***************************************************************************************/
 // PopulateTokenEndpointResponse implements https://tools.ietf.org/html/rfc6749#section-4.3.3
 func (c *ResourceOwnerPasswordCredentialsGrantHandler) PopulateTokenEndpointResponse(ctx context.Context, requester fosite.AccessRequester, responder fosite.AccessResponder) error {
 	if !requester.GetGrantTypes().Exact("password") {

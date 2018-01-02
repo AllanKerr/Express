@@ -7,6 +7,7 @@ import (
 	"github.com/ory/fosite"
 )
 
+// HTTP GET handler for displaying the registration page
 func (ctrl *HTTPController) Register(w http.ResponseWriter, req *http.Request) {
 
 	t, err := template.ParseFiles("templates/register.html")
@@ -17,6 +18,7 @@ func (ctrl *HTTPController) Register(w http.ResponseWriter, req *http.Request) {
 	t.Execute(w, nil)
 }
 
+// HTTP post handler for handling registration submission
 func (ctrl *HTTPController) SubmitRegistration(w http.ResponseWriter, req *http.Request) {
 
 	username := req.FormValue("username")
@@ -37,5 +39,5 @@ func (ctrl *HTTPController) SubmitRegistration(w http.ResponseWriter, req *http.
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	ctrl.Submit(w, req)
+	ctrl.SubmitLogin(w, req)
 }

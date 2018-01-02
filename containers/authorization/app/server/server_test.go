@@ -61,7 +61,7 @@ func login(username string, password string)  (int, map[string]interface{}, erro
 var server *Server
 
 func testLoginRequest(r *http.Request, form url.Values) (int, map[string]interface{}, error) {
-	return testRequest(r, form, server.authController.Submit)
+	return testRequest(r, form, server.authController.SubmitLogin)
 }
 
 func testRegisterRequest(r *http.Request, form url.Values) (int, map[string]interface{}, error) {

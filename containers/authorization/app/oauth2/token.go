@@ -7,6 +7,7 @@ import (
 	"context"
 )
 
+// HTTP handler for refresh, client_credentials, and password OAuth2 grants
 func (ctrl *HTTPController) Token(w http.ResponseWriter, req *http.Request) {
 
 	logger := logrus.WithFields(logrus.Fields{"endpoint": req.URL})
@@ -21,7 +22,9 @@ func (ctrl *HTTPController) Token(w http.ResponseWriter, req *http.Request) {
 		ctrl.auth.WriteAccessError(w, accessRequest, err)
 		return
 	}
-	// Grant requested scopes
+
+	// Grant requested scopes, NewAccessRequest already verifies
+	// that the requested scopes can be granted.
 	for _, scope := range accessRequest.GetRequestedScopes() {
 		if fosite.HierarchicScopeStrategy(accessRequest.GetClient().GetScopes(), scope) {
 			accessRequest.GrantScope(scope)

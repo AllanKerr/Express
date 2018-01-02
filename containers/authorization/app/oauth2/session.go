@@ -79,6 +79,7 @@ func (s *Session) SetRequestedScopes(scopes fosite.Arguments) {
 
 func (s *Session) AppendRequestedScope(scope string) {
 
+	// check for duplicates
 	for _, cur := range s.Scopes {
 		if scope == cur {
 			return
@@ -93,6 +94,7 @@ func (s *Session) GetGrantedScopes() fosite.Arguments {
 
 func (s *Session) GrantScope(scope string) {
 
+	// check for duplicates
 	for _, cur := range s.GrantedScopes {
 		if scope == cur {
 			return

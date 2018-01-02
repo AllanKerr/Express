@@ -7,11 +7,13 @@ import (
 	"os"
 )
 
+// Server used to initialize and run the authorization service.
 type Server struct {
 	app *core.App
 	authController *oauth2.HTTPController
 }
 
+// Create the database schema from the schemas directory
 func CreateSchema(ds core.DataStore) error {
 	schema, err := core.NewCqlSchema("schemas")
 	if err != nil {
@@ -20,6 +22,9 @@ func CreateSchema(ds core.DataStore) error {
 	return ds.CreateSchema(schema);
 }
 
+// Initialize the authorization server by creating the database
+// session, initializing the database's schema, and adding the
+// HTTP endpoints.
 func Initialize(config *oauth2.Config) *Server {
 
 	databaseUrl := os.Getenv("DATABASE_URL")
@@ -37,6 +42,8 @@ func Initialize(config *oauth2.Config) *Server {
 	}
 }
 
+// Run the authorization server by starting HTTP listening.
+// This function should not return.
 func (server *Server) Run() {
 	server.app.Start(8080)
 }

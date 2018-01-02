@@ -7,11 +7,15 @@ import (
 	"app/core"
 )
 
+// OAuth2 HTTP controller for setting up the HTTP endpoints
+// and creating the datastore adapter to persist the results
+// of those endpoint calls
 type HTTPController struct {
 	adapter *DataStoreAdapter
 	auth fosite.OAuth2Provider
 	hasher fosite.Hasher
 }
+
 
 func NewController(app *core.App, config *Config) *HTTPController {
 
@@ -42,7 +46,7 @@ func NewController(app *core.App, config *Config) *HTTPController {
 	app.AddEndpoint("/oauth2/revoke", false, ctrl.Revoke)
 
 	app.AddEndpoint("/oauth2/login", false, ctrl.Login).Methods("GET")
-	app.AddEndpoint("/oauth2/login", false, ctrl.Submit).Methods("POST")
+	app.AddEndpoint("/oauth2/login", false, ctrl.SubmitLogin).Methods("POST")
 	app.AddEndpoint("/oauth2/register", false, ctrl.Register).Methods("GET")
 	app.AddEndpoint("/oauth2/register", false, ctrl.SubmitRegistration).Methods("POST")
 	return ctrl

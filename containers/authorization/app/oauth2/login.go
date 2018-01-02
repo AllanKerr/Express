@@ -8,6 +8,7 @@ import (
 	"os"
 )
 
+// HTTP GET handler for displaying the login page
 func (ctrl *HTTPController) Login(w http.ResponseWriter, req *http.Request) {
 
 	t, err := template.ParseFiles("templates/login.html")
@@ -18,7 +19,8 @@ func (ctrl *HTTPController) Login(w http.ResponseWriter, req *http.Request) {
 	t.Execute(w, nil)
 }
 
-func (ctrl *HTTPController) Submit(w http.ResponseWriter, req *http.Request) {
+// HTTP post handler for handling login submission
+func (ctrl *HTTPController) SubmitLogin(w http.ResponseWriter, req *http.Request) {
 
 	username := req.FormValue("username")
 	password := req.FormValue("password")
