@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"github.com/ory/fosite"
 )
 
 func (ctrl *HTTPController) Register(w http.ResponseWriter, req *http.Request) {
@@ -29,8 +30,12 @@ func (ctrl *HTTPController) SubmitRegistration(w http.ResponseWriter, req *http.
 
 	user := NewUser(username, password)
 	err := ctrl.adapter.CreateUser(user)
-	if err != nil {
-		fmt.Println(err)
+	if err == fosite.ErrInvalidRequest {
+		w.WriteHeader(http.StatusConflict)
+		return
+	} else if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	ctrl.Submit(w, req)
 }

@@ -381,6 +381,10 @@ func (adapter *DataStoreAdapter) CreateUser(user *DefaultUser) error {
 		return fosite.ErrInvalidRequest.WithDebug("attempted to create a nil user")
 	}
 
+	if _, err := adapter.GetUser(nil, user.GetUsername()); err == nil {
+		return fosite.ErrInvalidRequest
+	}
+
 	session := adapter.getCqlSession()
 
 	// Compute the secret hash if it doesn't already exist
