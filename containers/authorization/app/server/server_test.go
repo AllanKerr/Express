@@ -51,11 +51,17 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		logrus.WithField("error", err).Fatal("error creating client")
 	}
+	adapter := oauth2.NewDataStoreAdapter(ds, config.GetHasher())
+
 	// create a new client for testing the OAuth endpoints
 	client := oauth2.NewClient(clientId, clientSecret, false)
-	adapter := oauth2.NewDataStoreAdapter(ds, config.GetHasher())
 	if err := adapter.CreateClient(client); err != nil {
 		logrus.WithField("error", err).Fatal("error creating client")
+	}
+
+	user := oauth2.NewUser("user", "password")
+	if err := adapter.CreateUser(user); err != nil {
+		logrus.WithField("error", err).Fatal("error creating user")
 	}
 
 	retCode := m.Run()
