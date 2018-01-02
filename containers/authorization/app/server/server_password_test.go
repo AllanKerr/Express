@@ -6,23 +6,21 @@ import (
 	"net/http"
 )
 
-func Test_Token_invalidUser(t*testing.T) {
+func Test_Token_InvalidUser(t*testing.T) {
 
-	// build token request
+	// build password token request with non-existent username
 	r, _ := http.NewRequest("POST", "/oauth2/token",  nil)
 	r.SetBasicAuth("admin", "demo-password")
-
-	// build body
 	form := url.Values{}
 	form.Add("grant_type", "password")
 	form.Add("username", "test_user")
 	form.Add("password", "test_password")
 
+	// verify the request was rejected
 	code, body, err := testTokenRequest(r, form)
 	if err != nil {
 		t.Errorf("Error during request: %v", err)
 	}
-
 	if code != http.StatusUnauthorized {
 		t.Errorf("Error, unexpected response status: %v", code)
 	}
@@ -31,23 +29,21 @@ func Test_Token_invalidUser(t*testing.T) {
 	}
 }
 
-func Test_Token_invalidPassword(t*testing.T) {
+func Test_Token_InvalidPassword(t*testing.T) {
 
-	// build token request
+	// build password token request valid username but invalid password
 	r, _ := http.NewRequest("POST", "/oauth2/token",  nil)
 	r.SetBasicAuth("admin", "demo-password")
-
-	// build body
 	form := url.Values{}
 	form.Add("grant_type", "password")
 	form.Add("username", "user")
 	form.Add("password", "test_password")
 
+	// verify the request was rejected
 	code, body, err := testTokenRequest(r, form)
 	if err != nil {
 		t.Errorf("Error during request: %v", err)
 	}
-
 	if code != http.StatusUnauthorized {
 		t.Errorf("Error, unexpected response status: %v", code)
 	}
@@ -56,13 +52,11 @@ func Test_Token_invalidPassword(t*testing.T) {
 	}
 }
 
-func Test_Token_validPassword(t*testing.T) {
+func Test_Token_ValidPassword(t*testing.T) {
 
-	// build token request
+	// build password token request with valid username and password
 	r, _ := http.NewRequest("POST", "/oauth2/token",  nil)
 	r.SetBasicAuth("admin", "demo-password")
-
-	// build body
 	form := url.Values{}
 	form.Add("grant_type", "password")
 	form.Add("username", "user")
@@ -87,13 +81,11 @@ func Test_Token_validPassword(t*testing.T) {
 	}
 }
 
-func Test_Token_validPasswordScope(t*testing.T) {
+func Test_Token_ValidPasswordScope(t*testing.T) {
 
-	// build token request
+	// build token request with valid username, password, and scopes
 	r, _ := http.NewRequest("POST", "/oauth2/token",  nil)
 	r.SetBasicAuth("admin", "demo-password")
-
-	// build body
 	form := url.Values{}
 	form.Add("grant_type", "password")
 	form.Add("username", "user")
@@ -104,7 +96,6 @@ func Test_Token_validPasswordScope(t*testing.T) {
 	if err != nil {
 		t.Errorf("Error during request: %v", err)
 	}
-
 	if code != http.StatusOK {
 		t.Errorf("Error, unexpected response status: %v", code)
 	}
@@ -124,11 +115,9 @@ func Test_Token_validPasswordScope(t*testing.T) {
 
 func Test_Token_invalidPasswordScope(t*testing.T) {
 
-	// build token request
+	// build token request with valid username and password but invalid scopes
 	r, _ := http.NewRequest("POST", "/oauth2/token",  nil)
 	r.SetBasicAuth("admin", "demo-password")
-
-	// build body
 	form := url.Values{}
 	form.Add("grant_type", "password")
 	form.Add("username", "user")

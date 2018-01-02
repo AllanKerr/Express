@@ -25,8 +25,6 @@ func Test_Token_Refresh(t*testing.T) {
 	// build token request to get a new access token using the refresh token
 	r, _ := http.NewRequest("POST", "/oauth2/token",  nil)
 	r.SetBasicAuth("admin", "demo-password")
-
-	// build refresh request body
 	form := url.Values{}
 	form.Add("grant_type", "refresh_token")
 	form.Add("refresh_token", refresh)

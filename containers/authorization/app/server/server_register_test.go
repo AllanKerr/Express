@@ -8,20 +8,18 @@ import (
 
 func Test_Token_NewRegister(t*testing.T) {
 
-	// build token request to create a new account
+	// build register request to create a new account
 	r, _ := http.NewRequest("POST", "/oauth2/register",  nil)
-
-	// build body
 	form := url.Values{}
 	form.Add("username", "newuser")
 	form.Add("password", "newpassword")
 	form.Add("confirm-password", "newpassword")
 
+	// verify that the account was created with a valid access token
 	code, body, err := testRegisterRequest(r, form)
 	if err != nil {
 		t.Errorf("Error during register request: %v", err)
 	}
-
 	if code != http.StatusOK {
 		t.Errorf("Error, unexpected response status: %v", code)
 	}
@@ -38,6 +36,7 @@ func Test_Token_NewRegister(t*testing.T) {
 		t.Errorf("Error during logging in new account: %v", err)
 	}
 
+	// verify the login was successful
 	if code != http.StatusOK {
 		t.Errorf("Error, unexpected response status: %v", code)
 	}
@@ -51,15 +50,14 @@ func Test_Token_NewRegister(t*testing.T) {
 
 func Test_Token_ExistingRegister(t*testing.T) {
 
-	// build token request to create a new account
+	// build token request to create a new account with an existing username
 	r, _ := http.NewRequest("POST", "/oauth2/register",  nil)
-
-	// build body
 	form := url.Values{}
 	form.Add("username", "user")
 	form.Add("password", "password")
 	form.Add("confirm-password", "password")
 
+	// verify the request was rejected
 	code, _, _ := testRegisterRequest(r, form)
 	if code != http.StatusConflict {
 		t.Errorf("Error, unexpected response status: %v", code)

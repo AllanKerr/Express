@@ -13,12 +13,11 @@ import (
 	"errors"
 )
 
+// test helper to create a new access token
 func createAccessToken() (string, error) {
 
 	r, _ := http.NewRequest("POST", "/oauth2/token",  nil)
 	r.SetBasicAuth("admin", "demo-password")
-
-	// build body
 	form := url.Values{}
 	form.Add("grant_type", "client_credentials")
 
@@ -33,6 +32,7 @@ func createAccessToken() (string, error) {
 	return token.(string), nil
 }
 
+// test helper to validate a token
 func validateToken(token string) bool {
 
 	r, _ := http.NewRequest("POST", "/oauth2/introspect",  nil)
@@ -45,6 +45,7 @@ func validateToken(token string) bool {
 	return code == http.StatusOK
 }
 
+// test helper to login to a username and password
 func login(username string, password string)  (int, map[string]interface{}, error) {
 
 	r, _ := http.NewRequest("POST", "/oauth2/login",  nil)
@@ -79,6 +80,7 @@ func testIntrospectionRequest(r *http.Request, form url.Values) (int, map[string
 	return testRequest(r, form, server.authController.Introspect)
 }
 
+// test helper for sending testing HTTP requests
 func testRequest(r *http.Request, form url.Values, f func(http.ResponseWriter, *http.Request)) (int, map[string]interface{}, error) {
 
 	r.PostForm = form
@@ -92,6 +94,8 @@ func testRequest(r *http.Request, form url.Values, f func(http.ResponseWriter, *
 	return w.Code, m, nil
 }
 
+// initialize the server's HTTP endpoints, create the database schema,
+// and add a default user and client for testing
 func TestMain(m *testing.M) {
 
 	// Change the current working directory to the project root
@@ -124,6 +128,7 @@ func TestMain(m *testing.M) {
 		logrus.WithField("error", err).Fatal("error creating client")
 	}
 
+	// create a test user
 	user := oauth2.NewUser("user", "password")
 	if err := adapter.CreateUser(user); err != nil {
 		logrus.WithField("error", err).Fatal("error creating user")
@@ -131,16 +136,13 @@ func TestMain(m *testing.M) {
 
 	retCode := m.Run()
 	server.app.GetDatastore().Close()
-
 	os.Exit(retCode)
 }
 
-func Test_Token_badGrant(t*testing.T) {
+func Test_Token_BadGrant(t*testing.T) {
 
-	// build token request
+	// build token request with a non-existent grant
 	r, _ := http.NewRequest("POST", "/oauth2/token",  nil)
-
-	// build body
 	form := url.Values{}
 	form.Add("grant_type", "unknown_grant")
 
@@ -149,6 +151,7 @@ func Test_Token_badGrant(t*testing.T) {
 		t.Errorf("Error during request: %v", err)
 	}
 
+	// verify the request was rejected
 	if code != http.StatusBadRequest {
 		t.Errorf("Error, unexpected response status: %v", code)
 	}
@@ -157,9 +160,9 @@ func Test_Token_badGrant(t*testing.T) {
 	}
 }
 
-func Test_Token_noGrant(t*testing.T) {
+func Test_Token_NoGrant(t*testing.T) {
 
-	// build token request
+	// build token request with no grant
 	r, _ := http.NewRequest("POST", "/oauth2/token",  nil)
 
 	code, body, err := testTokenRequest(r,  url.Values{})
@@ -167,6 +170,7 @@ func Test_Token_noGrant(t*testing.T) {
 		t.Errorf("Error during request: %v", err)
 	}
 
+	// verify the request was rejected
 	if code != http.StatusBadRequest {
 		t.Errorf("Error, unexpected response status: %v", code)
 	}
@@ -177,10 +181,8 @@ func Test_Token_noGrant(t*testing.T) {
 
 func Test_Token_UnsupportedGrant(t*testing.T) {
 
-	// build token request
+	// build token request with unsupported but valid OAuth2 grants
 	r, _ := http.NewRequest("POST", "/oauth2/token",  nil)
-
-	// build body
 	form := url.Values{}
 	form.Add("grant_type", "implicit")
 
@@ -189,6 +191,7 @@ func Test_Token_UnsupportedGrant(t*testing.T) {
 		t.Errorf("Error during request: %v", err)
 	}
 
+	// verify the request was rejected
 	if code != http.StatusBadRequest {
 		t.Errorf("Error, unexpected response status: %v", code)
 	}
