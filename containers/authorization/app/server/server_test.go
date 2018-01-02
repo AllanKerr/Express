@@ -15,14 +15,22 @@ import (
 var server *Server
 
 func testTokenRequest(r *http.Request, form url.Values) (int, map[string]interface{}, error) {
+	return testRequest(r, form, server.authController.Token)
+}
+
+func testRevokeRequest(r *http.Request, form url.Values) (int, map[string]interface{}, error) {
+	return testRequest(r, form, server.authController.Revoke)
+}
+
+func testRequest(r *http.Request, form url.Values, f func(http.ResponseWriter, *http.Request)) (int, map[string]interface{}, error) {
 
 	r.PostForm = form
 	w := httptest.NewRecorder()
-	server.authController.Token(w, r)
+	f(w, r)
 
 	m := make(map[string]interface{})
 	if err := json.Unmarshal(w.Body.Bytes(), &m); err != nil {
-		return 0, nil, err
+		return w.Code, nil, err
 	}
 	return w.Code, m, nil
 }
