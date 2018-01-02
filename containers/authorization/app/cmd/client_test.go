@@ -11,7 +11,6 @@ import (
 func TestMain(m *testing.M) {
 
 	os.Chdir("..")
-	logrus.Info(os.Getwd())
 
 	databaseUrl := os.Getenv("DATABASE_URL")
 	ds := core.NewCQLDataStoreRetry(databaseUrl, "authorization", 1, 5)
