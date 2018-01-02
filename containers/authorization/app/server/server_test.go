@@ -10,7 +10,40 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"encoding/json"
+	"errors"
 )
+
+func createAccessToken() (string, error) {
+
+	r, _ := http.NewRequest("POST", "/oauth2/token",  nil)
+	r.SetBasicAuth("admin", "demo-password")
+
+	// build body
+	form := url.Values{}
+	form.Add("grant_type", "client_credentials")
+
+	_, body, err := testTokenRequest(r, form)
+	if err != nil {
+		return "", err
+	}
+	token, ok := body["access_token"]
+	if !ok {
+		return "", errors.New("access token not found")
+	}
+	return token.(string), nil
+}
+
+func validateToken(token string) bool {
+
+	r, _ := http.NewRequest("POST", "/oauth2/introspect",  nil)
+	r.Header.Set("Authorization", "Bearer " + token)
+
+	// build body
+	form := url.Values{}
+
+	code, _, _ := testIntrospectionRequest(r, form)
+	return code == http.StatusOK
+}
 
 var server *Server
 
@@ -20,6 +53,10 @@ func testTokenRequest(r *http.Request, form url.Values) (int, map[string]interfa
 
 func testRevokeRequest(r *http.Request, form url.Values) (int, map[string]interface{}, error) {
 	return testRequest(r, form, server.authController.Revoke)
+}
+
+func testIntrospectionRequest(r *http.Request, form url.Values) (int, map[string]interface{}, error) {
+	return testRequest(r, form, server.authController.Introspect)
 }
 
 func testRequest(r *http.Request, form url.Values, f func(http.ResponseWriter, *http.Request)) (int, map[string]interface{}, error) {
