@@ -96,7 +96,8 @@ func (group *endpointGroup) getAnnotations(name string) map[string]string {
 	}
 	snippet += fmt.Sprintf(RewriteSnippet, name)
 	return map[string]string{
-		"ingress.kubernetes.io/configuration-snippet": snippet,
+		"nginx.ingress.kubernetes.io/configuration-snippet": snippet,
+		"kubernetes.io/ingress.class": "nginx",
 	}
 }
 
