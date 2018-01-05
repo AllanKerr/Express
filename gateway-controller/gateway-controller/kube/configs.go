@@ -6,6 +6,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // The default Kubernetes service configuration that parameters are added
@@ -44,6 +45,14 @@ func DefaultDeploymentConfig() *appsv1beta2.Deployment {
 				Spec: apiv1.PodSpec{
 					Containers: []apiv1.Container{
 						{
+							Resources:apiv1.ResourceRequirements{
+								Limits: apiv1.ResourceList{
+									 apiv1.ResourceCPU : resource.MustParse("250m"),
+								},
+								Requests:apiv1.ResourceList{
+									apiv1.ResourceCPU : resource.MustParse("50m"),
+								},
+							},
 							Ports: []apiv1.ContainerPort{
 								{
 									Name:          "http",
