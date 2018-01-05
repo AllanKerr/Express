@@ -7,6 +7,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"os"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
 type Client interface {
