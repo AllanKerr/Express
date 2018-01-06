@@ -28,6 +28,7 @@ cassandra:
   nameOverride: database
   config:
     cluster_name: database
+    cluster_size: 1
 
     # lower the heap size for Minikube
     max_heap_size: 500M
@@ -39,5 +40,5 @@ cassandra:
       cpu: 500m
       memory: 1Gi
     requests:
-      cpu: 500m
+      cpu: 100m
       memory: 1Gi
