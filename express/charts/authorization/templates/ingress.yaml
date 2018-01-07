@@ -10,34 +10,8 @@ metadata:
     heritage: {{ .Release.Service }}
   annotations:
       kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/server-snippet: |
-
-            location /_dummy {
-                internal;
-                set $scopes "";
-            }
-
-            location = /external-auth {
-
-                internal;
-                set $proxy_upstream_name "external-authentication";
-
-                proxy_pass_request_body     off;
-                proxy_set_header            Content-Length "";
-
-                proxy_set_header            Scopes                  $scopes;
-                proxy_set_header            Host                    $host;
-                proxy_set_header            X-Original-URL          $scheme://$http_host$request_uri;
-                proxy_set_header            X-Auth-Request-Redirect $request_uri;
-                proxy_set_header            X-Sent-From             "nginx-ingress-controller";
-
-                proxy_ssl_server_name       on;
-                proxy_pass_request_headers  on;
-                client_max_body_size        "1m";
-
-                set $target https://$host/oauth2/introspect;
-                proxy_pass $target;
-            }
+      ingress.kubernetes.io/server-snippet: {{ .Values.config.nginx.server_snippet | indent 8 }}
+      nginx.ingress.kubernetes.io/server-snippet: {{ .Values.config.nginx.server_snippet | indent 8 }}
 spec:
   rules:
   - http:
