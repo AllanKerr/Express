@@ -19,6 +19,11 @@ public class ApiApplication {
 		SpringApplication.run(ApiApplication.class, args);
 	}
 
+	//@Bean
+	//public Datastore cloudDatastoreService() {
+	//	return DatastoreOptions.getDefaultInstance().getService();
+	//}
+
 	@RequestMapping("/")
 	public String index(HttpServletRequest request) {
 
@@ -50,6 +55,9 @@ public class ApiApplication {
 
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
 	public String addSearch(@Valid @RequestBody SearchRequest search) {
+
+
+
 
 		return search.getPark();
 	}
