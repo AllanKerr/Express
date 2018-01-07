@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.config.java.AbstractCassandraConfiguration;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 
@@ -26,6 +27,16 @@ public class CassandraConfig extends AbstractCassandraConfiguration {
     @Override
     public String getContactPoints() {
         return contactPoints;
+    }
+
+    @Override
+    public String[] getEntityBasePackages() {
+        return new String[]{"com.kerr.domain"};
+    }
+
+    @Override
+    public SchemaAction getSchemaAction() {
+        return SchemaAction.CREATE_IF_NOT_EXISTS;
     }
 
     @Override
