@@ -19,11 +19,6 @@ public class ApiApplication {
 		SpringApplication.run(ApiApplication.class, args);
 	}
 
-	//@Bean
-	//public Datastore cloudDatastoreService() {
-	//	return DatastoreOptions.getDefaultInstance().getService();
-	//}
-
 	@RequestMapping("/")
 	public String index(HttpServletRequest request) {
 
