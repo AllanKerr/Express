@@ -2,10 +2,13 @@ package com.kerr;
 
 import java.util.Enumeration;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootApplication
@@ -42,5 +45,12 @@ public class ApiApplication {
 		}
 
 		return "Found: " + configKey;
+	}
+
+
+	@RequestMapping(value = "/search", method = RequestMethod.POST)
+	public String addSearch(@Valid @RequestBody SearchRequest search) {
+
+		return search.getPark();
 	}
 }
