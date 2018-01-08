@@ -1,11 +1,8 @@
 package com.kerr;
 
-import com.kerr.domain.Park;
-import com.kerr.repositories.ParkRepository;
 import java.util.Enumeration;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,8 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ApiApplication {
 
-	@Autowired
-	private ParkRepository repository;
+	//@Autowired
+	//private CampgroundRepository repository;
 
 	public static void main(String[] args) {
 		SpringApplication.run(ApiApplication.class, args);
@@ -29,7 +26,7 @@ public class ApiApplication {
 	public String index(HttpServletRequest request) {
 
 
-		repository.insert(new Park("id", "name", "dds"));
+		//repository.insert(new Park("id", "name", "dds"));
 
 		Enumeration<String> headers = request.getHeaderNames();
 		while (headers.hasMoreElements()) {
