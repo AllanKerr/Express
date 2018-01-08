@@ -14,12 +14,19 @@ public class CampgroundKey implements Serializable{
     @PrimaryKeyColumn(name = "campground_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
     private String campgroundId = "";
 
+    @PrimaryKeyColumn(name = "section_id", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
+    private String sectionId = "";
+
     public String getCampgroundId() {
         return campgroundId;
     }
 
     public String getParkId() {
         return parkId;
+    }
+
+    public String getSectionId() {
+        return sectionId;
     }
 
     public CampgroundKey() {}
@@ -29,7 +36,19 @@ public class CampgroundKey implements Serializable{
     }
 
     public CampgroundKey(String parkId, String campgroundId) {
+        this(parkId, campgroundId, "");
+    }
+
+    public CampgroundKey(String parkId, String campgroundId, String sectionId) {
+        assert parkId != null;
+        if (campgroundId == null) {
+            campgroundId = "";
+        }
+        if (sectionId == null) {
+            sectionId = "";
+        }
         this.parkId = parkId;
         this.campgroundId = campgroundId;
+        this.sectionId = sectionId;
     }
 }

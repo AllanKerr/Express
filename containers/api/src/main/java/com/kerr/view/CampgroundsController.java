@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-//@RequestMapping(value = "/parks/v1")
+@RequestMapping(value = "/campgrounds/v1")
 public class CampgroundsController {
 
     private CampgroundRepository campgrounds;
@@ -29,10 +29,7 @@ public class CampgroundsController {
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public HttpStatus addCampground(@Valid @RequestBody CampgroundDto campground) {
-
-        System.out.println("OA: " + campground.getCampground().getParkId());
         campgrounds.insert(campground.getCampground());
-
         return HttpStatus.OK;
     }
 }

@@ -18,12 +18,19 @@ public class Campground {
     @Column("campground_name")
     private String campgroundName;
 
+    @Column("section_name")
+    private String sectionName;
+
     public String getParkId() {
         return key.getParkId();
     }
 
     public String getCampgroundId() {
         return key.getCampgroundId();
+    }
+
+    public String getSectionId() {
+        return key.getSectionId();
     }
 
     public String getOrganization() {
@@ -48,9 +55,9 @@ public class Campground {
 
     public Campground(){}
 
-    public Campground(String parkId, String campgroundId, String organization, String parkName,
+    public Campground(String parkId, String campgroundId, String sectionId, String organization, String parkName,
             String campgroundName) {
-        this.key = new CampgroundKey(parkId, campgroundId);
+        this.key = new CampgroundKey(parkId, campgroundId, sectionId);
         this.organization = organization;
         this.parkName = parkName;
         this.campgroundName = campgroundName;

@@ -25,12 +25,16 @@ public final class CampgroundDto {
         return campgroundName;
     }
 
-    @NotEmpty
+    public String getSectionId() {
+        return sectionId;
+    }
 
+    @NotEmpty
     private String parkId;
 
-    @NotEmpty
     private String campgroundId;
+
+    private String sectionId;
 
     @NotEmpty
     private String organization;
@@ -41,6 +45,6 @@ public final class CampgroundDto {
     private String campgroundName;
 
     public Campground getCampground() {
-        return new Campground(parkId, campgroundId, organization, parkName, parkName);
+        return new Campground(parkId, campgroundId, sectionId, organization, parkName, parkName);
     }
 }
