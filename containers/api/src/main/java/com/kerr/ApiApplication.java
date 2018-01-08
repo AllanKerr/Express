@@ -10,15 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ApiApplication {
 
-	//@Autowired
-	//private CampgroundRepository repository;
-
 	public static void main(String[] args) {
 		SpringApplication.run(ApiApplication.class, args);
 	}
 
 	@RequestMapping("/")
 	public String index(HttpServletRequest request) {
-		return "Hello World";
+		return "Index";
 	}
 }
