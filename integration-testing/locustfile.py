@@ -26,8 +26,12 @@ def list_searches(l):
     path = get_path("/searches/v1/list")
     l.client.get(path, headers=headers, verify=False)
 
+def list_campgrounds(l):
+    path = get_path("/campgrounds/v1/list")
+    l.client.get(path, verify=False)
+
 class UserBehavior(TaskSet):
-    tasks = {list_searches: 1}
+    tasks = {list_searches: 1, list_campgrounds: 2}
 
     def on_start(self):
         register(self)
