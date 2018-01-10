@@ -1,10 +1,13 @@
 package com.kerr.view;
 
+import com.kerr.domain.Search;
 import com.kerr.repositories.SearchRepository;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -31,5 +34,20 @@ public class SearchController {
         }
         searches.save(search.getSearches(userId));
         return HttpStatus.OK;
+    }
+
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    public ResponseEntity<List<Search>> listSearches(HttpServletRequest request) {
+
+        ResponseEntity<List<Search>> response;
+        String userId = request.getHeader("User-Id");
+        if (userId == null || userId.isEmpty()) {
+            response = ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } else {
+            List<Search> body = searches.findAllByKey_UserId(userId);
+            return new ResponseEntity<>(body, HttpStatus.OK);
+
+        }
+        return response;
     }
 }

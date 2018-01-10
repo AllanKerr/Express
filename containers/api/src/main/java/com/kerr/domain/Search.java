@@ -59,6 +59,15 @@ public class Search {
         this.nights = nights;
     }
 
+    public Search() {}
+
+    public Search(SearchKey key, Date rangeStart, Date rangeEnd, int nights) {
+        this.key = key;
+        this.rangeStart = rangeStart;
+        this.rangeEnd = rangeEnd;
+        this.nights = nights;
+    }
+
     public Search(String userId, String parkId, String campgroundId, String sectionId, Date rangeStart, Date rangeEnd, int nights) {
         this.key = new SearchKey(userId, parkId, campgroundId, sectionId);
         this.rangeStart = rangeStart;

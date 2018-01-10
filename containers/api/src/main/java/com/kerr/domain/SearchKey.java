@@ -8,17 +8,17 @@ import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 @PrimaryKeyClass
 public class SearchKey implements Serializable {
 
-    @PrimaryKeyColumn(name = "park_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
+    @PrimaryKeyColumn(name = "user_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
+    private String userId;
+
+    @PrimaryKeyColumn(name = "park_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
     private String parkId;
 
-    @PrimaryKeyColumn(name = "campground_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
+    @PrimaryKeyColumn(name = "campground_id", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
     private String campgroundId = "";
 
-    @PrimaryKeyColumn(name = "section_id", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
+    @PrimaryKeyColumn(name = "section_id", ordinal = 3, type = PrimaryKeyType.CLUSTERED)
     private String sectionId = "";
-
-    @PrimaryKeyColumn(name = "user_id", ordinal = 3, type = PrimaryKeyType.CLUSTERED)
-    private String userId;
 
     public String getCampgroundId() {
         return campgroundId;
