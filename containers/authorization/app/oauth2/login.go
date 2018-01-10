@@ -29,7 +29,7 @@ func (ctrl *HTTPController) SubmitLogin(w http.ResponseWriter, req *http.Request
 	form.Add("grant_type", "password")
 	form.Add("client_id", os.Getenv("CLIENT_ID"))
 	form.Add("client_secret", os.Getenv("CLIENT_SECRET"))
-	form.Add("scope", "offline")
+	form.Add("scope", "user offline")
 	form.Add("username", username)
 	form.Add("password", password)
 	req.PostForm = form
