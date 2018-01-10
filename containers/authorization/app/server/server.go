@@ -28,7 +28,7 @@ func CreateSchema(ds core.DataStore) error {
 func Initialize(config *oauth2.Config) *Server {
 
 	databaseUrl := os.Getenv("DATABASE_URL")
-	ds := core.NewCQLDataStoreRetry(databaseUrl, "authorization", 3, 5)
+	ds := core.NewCQLDataStoreRetry(databaseUrl, "authorization", 1, 5)
 
 	if err := CreateSchema(ds); err != nil {
 		logrus.WithField("error", err).Error("Failed to create schema.")

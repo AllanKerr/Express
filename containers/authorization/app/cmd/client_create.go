@@ -11,7 +11,7 @@ import (
 func createClient(clientId string, clientSecret string, public bool) error {
 
 	databaseUrl := os.Getenv("DATABASE_URL")
-	ds, err := core.NewCQLDataStore(databaseUrl, "authorization", 3)
+	ds, err := core.NewCQLDataStore(databaseUrl, "authorization", 1)
 	if err != nil {
 		return err
 	}

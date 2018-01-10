@@ -14,7 +14,7 @@ func addUserScope(username string, scope string) error {
 
 	// start a new CQL session
 	databaseUrl := os.Getenv("DATABASE_URL")
-	ds, err := core.NewCQLDataStore(databaseUrl, "default", 3)
+	ds, err := core.NewCQLDataStore(databaseUrl, "authorization", 1)
 	if err != nil {
 		return err
 	}
