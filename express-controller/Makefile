@@ -4,10 +4,13 @@ SUBPROJECTS += database
 .PHONY: install uninstall subprojs
 .DEFAULT: subprojs
 
-install: build
+install: $(GOPATH)/src/express-controller build
 
 uninstall:
 	rm ./services
+
+$(GOPATH)/src/express-controller:
+	ln -s "$(shell pwd)/express-controller" "$(GOPATH)/src/express-controller"
 
 build:
 	go build -o ./services ./express-controller
