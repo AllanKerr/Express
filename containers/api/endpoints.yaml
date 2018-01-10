@@ -1,0 +1,8 @@
+endpoints:
+  - path: /campgrounds/v1/add
+    scopes: [admin]
+  - path: /campgrounds/v1/list
+  - path: /searches/v1/add
+    scopes: [user]
+  - path: /searches/v1/list
+    scopes: [user]
