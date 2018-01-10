@@ -32,6 +32,7 @@ func Initialize(config *oauth2.Config) *Server {
 
 	if err := CreateSchema(ds); err != nil {
 		logrus.WithField("error", err).Error("Failed to create schema.")
+		return nil;
 	}
 
 	app := core.NewApp(ds, true, logrus.DebugLevel)
