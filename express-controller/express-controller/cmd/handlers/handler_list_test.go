@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"testing"
-	"gateway-controller/kube"
+	"express-controller/kube"
 	"time"
 )
 

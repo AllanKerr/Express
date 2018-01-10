@@ -10,7 +10,7 @@ uninstall:
 	rm ./services
 
 build:
-	go build -o ./services ./gateway-controller
+	go build -o ./services ./express-controller
 
 subprojs:
 	@for proj in $(SUBPROJECTS); \

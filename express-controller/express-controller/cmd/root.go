@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"gateway-controller/cmd/handlers"
-	"gateway-controller/kube"
+	"express-controller/cmd/handlers"
+	"express-controller/kube"
 	"fmt"
 )
 

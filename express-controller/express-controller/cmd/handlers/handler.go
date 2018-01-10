@@ -1,6 +1,6 @@
 package handlers
 
-import "gateway-controller/kube"
+import "express-controller/kube"
 
 type CommandHandler struct {
 	Client kube.Client

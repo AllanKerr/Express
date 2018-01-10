@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/spf13/cobra"
-	"gateway-controller/kube"
+	"express-controller/kube"
 	apiv1 "k8s.io/api/core/v1"
 	"fmt"
 )

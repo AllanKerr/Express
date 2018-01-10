@@ -1,7 +1,7 @@
 package main
 
 import (
-	"gateway-controller/cmd"
+	"express-controller/cmd"
 )
 
 func main() {

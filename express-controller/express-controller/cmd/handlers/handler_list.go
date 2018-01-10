@@ -6,7 +6,7 @@ import (
 	"text/tabwriter"
 	"os"
 	apiv1 "k8s.io/api/core/v1"
-	"gateway-controller/kube"
+	"express-controller/kube"
 	"io"
 )
 

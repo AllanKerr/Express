@@ -4,7 +4,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"gateway-controller/kube"
+	"express-controller/kube"
 	"fmt"
 	"io/ioutil"
 )
