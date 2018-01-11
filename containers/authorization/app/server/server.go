@@ -35,7 +35,7 @@ func Initialize(config *oauth2.Config) *Server {
 		return nil;
 	}
 
-	app := core.NewApp(ds, true, logrus.DebugLevel)
+	app := core.NewApp(ds, true, logrus.ErrorLevel)
 
 	return &Server{
 		app: app,
