@@ -19,6 +19,8 @@ spec:
             - name: {{ template "name" . }}
               image: allankerr/authorization
               imagePullPolicy: IfNotPresent
+              resources:
+{{ toYaml .Values.resources | indent 16 }}
               command:
               - app
               - host
