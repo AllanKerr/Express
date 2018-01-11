@@ -5,6 +5,7 @@ import campgrounds
 from random import *
 import json
 import string
+from locust.exception import StopLocust
 
 def get_path(path):
     return "/testapi" + path
@@ -92,28 +93,15 @@ def add_search(l):
     }), headers=headers, verify=False)
 
 class UserBehavior(TaskSet):
-    tasks = {list_searches: 30, list_campgrounds: 30, add_search: 10, login: 1, refresh: 1}
+    tasks = {list_searches: 30, list_campgrounds: 30, add_search: 15, login: 2, refresh: 2, register: 1}
 
     def on_start(self):
+        self.count = 0
         register(self)
-
-class AdminBehavior(TaskSet):
-    tasks = {list_searches: 30, list_campgrounds: 30, add_search: 5, refresh: 1}
-
-    def on_start(self):
-        self.username = "admin"
-        self.password = "password"
-        login(self)
 
 class WebsiteUser(HttpLocust):
     weight = 30
     task_set = UserBehavior
-    min_wait = 5000
-    max_wait = 9000
-
-class WebsiteAdmin(HttpLocust):
-    weight = 1
-    task_set = AdminBehavior
     min_wait = 5000
     max_wait = 9000
 
