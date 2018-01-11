@@ -45,6 +45,11 @@ config:
     # - secretName: chart-example-tls
     #   hosts:
     #     - chart-example.local
+
+  autoscaling:
+    maxReplicas: 16
+    targetAverageUtilization: 75
+
 resources:
   requests:
     cpu: 250m
