@@ -45,6 +45,7 @@ def register(l):
         l.username = username
         l.password = password
         l.authorization = "bearer " + r.json()["access_token"]
+        l.refresh = r.json()["refresh_token"]
 
 def login(l):
     r = l.client.post("/oauth2/login", {
@@ -53,6 +54,16 @@ def login(l):
     }, verify=False)
     if r.status_code == 200:
         l.authorization = "bearer " + r.json()["access_token"]
+        l.refresh = r.json()["refresh_token"]
+
+def refresh(l):
+    r = l.client.post("/oauth2/token", {
+        "grant_type": "refresh_token",
+        "refresh_token": l.refresh,
+    }, auth=('admin', 'demo-password'), verify=False)
+    if r.status_code == 200:
+        l.authorization = "bearer " + r.json()["access_token"]
+        l.refresh = r.json()["refresh_token"]
 
 def list_searches(l):
     headers = {'Authorization': l.authorization}
@@ -81,13 +92,13 @@ def add_search(l):
     }), headers=headers, verify=False)
 
 class UserBehavior(TaskSet):
-    tasks = {list_searches: 30, list_campgrounds: 30, add_search: 25, login: 1}
+    tasks = {list_searches: 30, list_campgrounds: 30, add_search: 10, login: 1, refresh: 1}
 
     def on_start(self):
         register(self)
 
 class AdminBehavior(TaskSet):
-    tasks = {list_searches: 1, list_campgrounds: 1, add_search: 1}
+    tasks = {list_searches: 30, list_campgrounds: 30, add_search: 5, refresh: 1}
 
     def on_start(self):
         self.username = "admin"
