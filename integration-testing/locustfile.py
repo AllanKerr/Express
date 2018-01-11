@@ -2,23 +2,54 @@ from locust import HttpLocust, TaskSet
 import time
 import urllib3
 import campgrounds
-from random import randrange
+from random import *
 import json
+import string
 
 def get_path(path):
     return "/testapi" + path
 
-def username():
-    if 'num' not in username.__dict__:
-        username.num = int(time.time())
-    username.num += 1
-    return "express-" + str(username.num)
+def random_username():
+    if 'num' not in random_username.__dict__:
+        random_username.num = int(time.time())
+    random_username.num += 1
+    return "express-" + str(random_username.num)
+
+
+ #***************************************************************************************
+ #    Python Snippets: How to Generate Random String
+ #    Author: Jackson Cooper
+ #    Date: Jan. 10, 2018
+ #    Code version: 1.0
+ #    Availability: https://www.pythoncentral.io/python-snippets-how-to-generate-random-string/
+ #
+ #***************************************************************************************/
+def random_password():
+    min_char = 8
+    max_char = 12
+    allchar = string.ascii_letters + string.punctuation + string.digits
+    password = "".join(choice(allchar) for x in range(randint(min_char, max_char)))
+    return password
 
 def register(l):
+    username = random_username()
+    password = random_password()
+
     r = l.client.post("/oauth2/register", {
-        "username": username(),
-        "password":"password",
-        "confirm-password":"password"
+        "username": username,
+        "password": password,
+        "confirm-password": password
+    }, verify=False)
+
+    if r.status_code == 200:
+        l.username = username
+        l.password = password
+        l.authorization = "bearer " + r.json()["access_token"]
+
+def login(l):
+    r = l.client.post("/oauth2/login", {
+        "username": l.username,
+        "password": l.password,
     }, verify=False)
     if r.status_code == 200:
         l.authorization = "bearer " + r.json()["access_token"]
@@ -50,13 +81,28 @@ def add_search(l):
     }), headers=headers, verify=False)
 
 class UserBehavior(TaskSet):
-    tasks = {list_searches: 1, list_campgrounds: 1, add_search: 1}
+    tasks = {list_searches: 30, list_campgrounds: 30, add_search: 25, login: 1}
 
     def on_start(self):
         register(self)
 
+class AdminBehavior(TaskSet):
+    tasks = {list_searches: 1, list_campgrounds: 1, add_search: 1}
+
+    def on_start(self):
+        self.username = "admin"
+        self.password = "password"
+        login(self)
+
 class WebsiteUser(HttpLocust):
+    weight = 30
     task_set = UserBehavior
+    min_wait = 5000
+    max_wait = 9000
+
+class WebsiteAdmin(HttpLocust):
+    weight = 1
+    task_set = AdminBehavior
     min_wait = 5000
     max_wait = 9000
 
