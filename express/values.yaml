@@ -32,13 +32,13 @@ cassandra:
 
     # lower the heap size for Minikube
     max_heap_size: 500M
-    heap_new_size: 100M
+    heap_new_size: 250M
 
   resources:
     # Lower the memory and CPU usage for Minikube
     limits:
-      cpu: 500m
+      cpu: 1
       memory: 1Gi
     requests:
-      cpu: 100m
+      cpu: 500m
       memory: 1Gi
