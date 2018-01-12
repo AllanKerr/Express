@@ -54,7 +54,9 @@ func (c *Config) GetHasher() fosite.Hasher {
 // The fosite library configuration
 func (c *Config) GetAuthConfig() *compose.Config {
 	if c.authConfig == nil {
-		c.authConfig = &compose.Config{}
+		c.authConfig = &compose.Config{
+			HashCost:6,
+		}
 	}
 	return c.authConfig
 }
