@@ -38,7 +38,7 @@ cassandra:
     # Lower the memory and CPU usage for Minikube
     limits:
       cpu: 1
-      memory: 1Gi
+      memory: 2Gi
     requests:
-      cpu: 500m
-      memory: 1Gi
+      cpu: 1
+      memory: 2Gi
