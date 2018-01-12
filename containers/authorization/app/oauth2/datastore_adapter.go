@@ -406,7 +406,7 @@ func (adapter *DataStoreAdapter) CreateUser(user *DefaultUser) error {
 
 	// insert the user
 	if err := q.ExecRelease(); err != nil {
-		logrus.WithField("error", err).Fatal("failed to create user")
+		logrus.WithField("error", err).Error("failed to create user")
 		return errors.WithStack(err)
 	}
 	return nil
