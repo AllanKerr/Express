@@ -18,7 +18,7 @@ spec:
             containers:
             - name: {{ template "name" . }}
               image: allankerr/authorization
-              imagePullPolicy: IfNotPresent
+              imagePullPolicy: Always
               resources:
 {{ toYaml .Values.resources | indent 16 }}
               command:
