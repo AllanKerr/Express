@@ -46,11 +46,8 @@ func DefaultDeploymentConfig() *appsv1beta2.Deployment {
 					Containers: []apiv1.Container{
 						{
 							Resources:apiv1.ResourceRequirements{
-								Limits: apiv1.ResourceList{
-									 apiv1.ResourceCPU : resource.MustParse("1000m"),
-								},
 								Requests:apiv1.ResourceList{
-									apiv1.ResourceCPU : resource.MustParse("50m"),
+									apiv1.ResourceCPU : resource.MustParse("100m"),
 								},
 							},
 							Ports: []apiv1.ContainerPort{
