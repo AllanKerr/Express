@@ -12,7 +12,7 @@ def get_path(path):
 
 def random_username():
     if 'num' not in random_username.__dict__:
-        random_username.num = int(time.time())
+        random_username.num = int(1000*time.time())
     random_username.num += 1
     return "express-" + str(random_username.num)
 
@@ -47,6 +47,8 @@ def register(l):
         l.password = password
         l.authorization = "bearer " + r.json()["access_token"]
         l.refresh = r.json()["refresh_token"]
+    else:
+         raise StopLocust("Registration error")
 
 def login(l):
     r = l.client.post("/oauth2/login", {
@@ -96,11 +98,9 @@ class UserBehavior(TaskSet):
     tasks = {list_searches: 30, list_campgrounds: 30, add_search: 15, login: 2, refresh: 2, register: 1}
 
     def on_start(self):
-        self.count = 0
         register(self)
 
 class WebsiteUser(HttpLocust):
-    weight = 30
     task_set = UserBehavior
     min_wait = 5000
     max_wait = 9000
