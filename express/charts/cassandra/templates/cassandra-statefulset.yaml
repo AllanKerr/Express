@@ -52,6 +52,18 @@ spec:
 {{- if .Values.selector }}
 {{ toYaml .Values.selector | indent 6 }}
 {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 75
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - {{ template "cassandra.fullname" . }}
+              topologyKey: "kubernetes.io/hostname"
       containers:
       - name: {{ template "cassandra.fullname" . }}
         image: "{{ .Values.image.repo }}:{{ .Values.image.tag }}"

@@ -5,10 +5,7 @@
 nginx-ingress:
   controller:
     autoscaling:
-      enabled: true
-      minReplicas: 1
-      maxReplicas: 11
-      targetAverageUtilization: 50
+      maxReplicas: 5
 
 authorization:
   nameOverride: authorization
@@ -20,33 +17,11 @@ authorization:
       # - secretName: chart-example-tls
       #   hosts:
       #     - chart-example.local
-  resources: {}
-    # We usually recommend not to specify default resources and to leave this as a conscious
-    # choice for the user. This also increases chances charts run on environments with little
-    # resources, such as Minikube. If you do want to specify resources, uncomment the following
-    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-    # limits:
-    #  cpu: 100m
-    #  memory: 128Mi
-    #requests:
-    #  cpu: 100m
-    #  memory: 128Mi
+    autoscaling:
+      maxReplicas: 5
 
 cassandra:
   nameOverride: database
   config:
     cluster_name: database
     cluster_size: 1
-
-    # lower the heap size for Minikube
-    max_heap_size: 500M
-    heap_new_size: 250M
-
-  resources:
-    # Lower the memory and CPU usage for Minikube
-    limits:
-      cpu: 1
-      memory: 2Gi
-    requests:
-      cpu: 1
-      memory: 2Gi

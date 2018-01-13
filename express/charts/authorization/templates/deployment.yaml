@@ -15,6 +15,18 @@ spec:
             app: {{ template "name" . }}
             release: {{ .Release.Name }}
         spec:
+            affinity:
+              podAntiAffinity:
+                preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 75
+                  podAffinityTerm:
+                    labelSelector:
+                      matchExpressions:
+                      - key: app
+                        operator: In
+                        values:
+                        - {{ template "name" . }}
+                    topologyKey: "kubernetes.io/hostname"
             containers:
             - name: {{ template "name" . }}
               image: allankerr/authorization

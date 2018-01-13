@@ -89,6 +89,10 @@ func (handler *deployHandler) createDeployment(name string, image string, port i
 	deployment.Spec.Template.Spec.Containers[0].Name = name
 	deployment.Spec.Template.Spec.Containers[0].Image = image
 	deployment.Spec.Template.Spec.Containers[0].Ports[0].ContainerPort = port
+	deployment.Spec.Template.Spec.Affinity.PodAntiAffinity.
+		PreferredDuringSchedulingIgnoredDuringExecution[0].
+			PodAffinityTerm.LabelSelector.MatchExpressions[0].
+				Values[0] = name
 
 	txn := kube.NewDeploymentTransaction(handler.client, apiv1.NamespaceDefault)
 	if err := handler.execute(txn, deployment); err == nil {

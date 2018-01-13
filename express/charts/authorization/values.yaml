@@ -47,9 +47,9 @@ config:
     #     - chart-example.local
 
   autoscaling:
-    maxReplicas: 16
-    targetAverageUtilization: 75
+    maxReplicas: 5
+    targetAverageUtilization: 50
 
 resources:
   requests:
-    cpu: 250m
+    cpu: 100m

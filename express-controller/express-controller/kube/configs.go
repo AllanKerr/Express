@@ -43,6 +43,27 @@ func DefaultDeploymentConfig() *appsv1beta2.Deployment {
 
 				},
 				Spec: apiv1.PodSpec{
+					Affinity:&apiv1.Affinity{
+						PodAntiAffinity: &apiv1.PodAntiAffinity{
+							PreferredDuringSchedulingIgnoredDuringExecution: []apiv1.WeightedPodAffinityTerm{
+								apiv1.WeightedPodAffinityTerm{
+									Weight: 75,
+									PodAffinityTerm: apiv1.PodAffinityTerm{
+										LabelSelector: &metav1.LabelSelector{
+											MatchExpressions: []metav1.LabelSelectorRequirement{
+												metav1.LabelSelectorRequirement{
+													Key:      "app",
+													Operator: metav1.LabelSelectorOpIn,
+													Values:   []string{""},
+												},
+											},
+										},
+										TopologyKey: "kubernetes.io/hostname",
+									},
+								},
+							},
+						},
+					},
 					Containers: []apiv1.Container{
 						{
 							Resources:apiv1.ResourceRequirements{
@@ -77,13 +98,27 @@ func DefaultDeploymentConfig() *appsv1beta2.Deployment {
 // The default Kubernetes autoscaler configuration that parameters are added
 // to when an application container is deployed
 func DefaultAutoscalerConfig() *autoscalingv2beta1.HorizontalPodAutoscaler {
+
+	var utilization int32
+	utilization = 50
+
 	return &autoscalingv2beta1.HorizontalPodAutoscaler{
+
 		ObjectMeta: metav1.ObjectMeta{
 
 		},
 		Spec: autoscalingv2beta1.HorizontalPodAutoscalerSpec{
 			ScaleTargetRef: autoscalingv2beta1.CrossVersionObjectReference{
 				Kind: "Deployment",
+			},
+			Metrics:[]autoscalingv2beta1.MetricSpec{
+				autoscalingv2beta1.MetricSpec{
+					Type: autoscalingv2beta1.ResourceMetricSourceType,
+					Resource: &autoscalingv2beta1.ResourceMetricSource{
+						Name: apiv1.ResourceCPU,
+						TargetAverageUtilization: &utilization,
+					},
+				},
 			},
 		},
 	}
