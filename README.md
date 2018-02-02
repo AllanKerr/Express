@@ -31,3 +31,6 @@ This includes documentation on:
 ## Design
 
 Detailed information the design of Express services can be found in the [Design](TODO).
+
+## Code of conduct
+Participation on Express is governed by the [Covenant Code of Conduct](CODE_OF_CONDUCT.md).
