@@ -22,8 +22,9 @@ func createCluster(host string) *gocql.ClusterConfig {
 	logrus.WithField("host", host).Info("Creating new CQL session.")
 
 	cluster := gocql.NewCluster(host)
-	cluster.NumConns = 20
+	cluster.NumConns = 32
 	cluster.Consistency = gocql.Quorum
+	cluster.PoolConfig.HostSelectionPolicy = gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy())
 	return cluster
 }
 
