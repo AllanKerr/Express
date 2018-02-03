@@ -1,5 +1,8 @@
 package com.kerr.config;
 
+import com.datastax.driver.core.policies.LoadBalancingPolicy;
+import com.datastax.driver.core.policies.RoundRobinPolicy;
+import com.datastax.driver.core.policies.TokenAwarePolicy;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +40,13 @@ public class CassandraConfig extends AbstractCassandraConfiguration {
     @Override
     public SchemaAction getSchemaAction() {
         return SchemaAction.CREATE_IF_NOT_EXISTS;
+    }
+
+    @Override
+    public LoadBalancingPolicy getLoadBalancingPolicy() {
+
+        RoundRobinPolicy policy = new RoundRobinPolicy();
+        return new TokenAwarePolicy(policy);
     }
 
     @Override
