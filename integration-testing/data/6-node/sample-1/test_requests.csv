@@ -1,0 +1,6 @@
+"Method","Name","# requests","# failures","Median response time","Average response time","Min response time","Max response time","Average Content Size","Requests/s"
+"POST","/oauth2/login",8766,0,110,218,54,4902,275,15.57
+"POST","/oauth2/register",5327,0,190,320,62,6609,275,9.46
+"POST","/testapi/searches/v1/add",64256,0,140,579,45,9274,4,114.13
+"GET","/testapi/searches/v1/list",128087,0,140,570,45,10890,113,227.50
+"None","Total",206436,0,140,552,45,10890,90,366.66
