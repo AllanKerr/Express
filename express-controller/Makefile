@@ -7,13 +7,13 @@ SUBPROJECTS += database
 install: $(GOPATH)/src/express-controller build
 
 uninstall:
-	rm ./services
+	rm ./bin/express-controller
 
 $(GOPATH)/src/express-controller:
 	ln -s "$(shell pwd)/express-controller" "$(GOPATH)/src/express-controller"
 
 build:
-	go build -o ./services ./express-controller
+	go build -o ./bin/express-controller ./express-controller
 
 subprojs:
 	@for proj in $(SUBPROJECTS); \
