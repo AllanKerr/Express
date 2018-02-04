@@ -9,11 +9,11 @@ Express automatically handles the following items for deployed APIs:
 
 ## Install
 
-A guide on running Express on your Kubernetes cluster can be found in the [Quick Start Guide](TODO).
+A guide on running Express on your Kubernetes cluster can be found in the [Quick Start Guide](https://github.com/AllanKerr/Express/wiki/Quick-Start-Guide).
 
 ## Documentation
 
-Detailed information on using the Express tool can be found in the [Documentation](TODO).
+Detailed information on using the Express tool can be found in the [Documentation](https://github.com/AllanKerr/Express/wiki).
 
 This includes documentation on:
 * **OAuth2 Clients**
@@ -30,7 +30,7 @@ This includes documentation on:
 
 ## Design
 
-Detailed information the design of Express services can be found in the [Design](TODO).
+Detailed information the design of Express services can be found in the [Design](https://github.com/AllanKerr/Express/wiki).
 
 ## Code of conduct
 Participation on Express is governed by the [Covenant Code of Conduct](CODE_OF_CONDUCT.md).
