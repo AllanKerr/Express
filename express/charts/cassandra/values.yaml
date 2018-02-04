@@ -44,7 +44,6 @@ resources:
 ## ref: http://docs.datastax.com/en/cassandra/3.0/cassandra/operations/opsTuneJVM.html
 config:
   cluster_name: cassandra
-  cluster_size: 3
   seed_size: 2
   num_tokens: 256
   dc_name: DC1

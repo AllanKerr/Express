@@ -2,11 +2,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-nginx-ingress:
-  controller:
-    autoscaling:
-      maxReplicas: 5
-
 authorization:
   nameOverride: authorization
   config:
@@ -17,11 +12,11 @@ authorization:
       # - secretName: chart-example-tls
       #   hosts:
       #     - chart-example.local
-    autoscaling:
-      maxReplicas: 5
 
 cassandra:
   nameOverride: database
   config:
     cluster_name: database
-    cluster_size: 1
+
+global:
+  maxReplicas: 1

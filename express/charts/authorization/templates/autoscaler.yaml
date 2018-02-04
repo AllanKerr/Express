@@ -13,7 +13,7 @@ spec:
     kind: Deployment
     name: {{ template "fullname" . }}
   minReplicas: 1
-  maxReplicas: {{ .Values.config.autoscaling.maxReplicas }}
+  maxReplicas: {{ .Values.global.maxReplicas }}
   metrics:
   - type: Resource
     resource:

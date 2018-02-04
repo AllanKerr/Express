@@ -40,7 +40,7 @@ metadata:
     heritage: "{{ .Release.Service }}"
 spec:
   serviceName: {{ template "cassandra.fullname" . }}
-  replicas: {{ .Values.config.cluster_size }}
+  replicas: {{ .Values.global.maxReplicas }}
   template:
     metadata:
       labels:

@@ -16,7 +16,7 @@ spec:
     kind: Deployment
     name: {{ template "nginx-ingress.controller.fullname" . }}
   minReplicas: {{ .Values.controller.autoscaling.minReplicas }}
-  maxReplicas: {{ .Values.controller.autoscaling.maxReplicas }}
+  maxReplicas: {{ .Values.global.maxReplicas }}
   metrics:
   - type: Resource
     resource:

@@ -107,7 +107,6 @@ controller:
   autoscaling:
     enabled: true
     minReplicas: 1
-  #  maxReplicas: 11
     targetAverageUtilization: 50
 
   ## Override NGINX template

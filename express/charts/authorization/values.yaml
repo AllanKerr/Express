@@ -47,7 +47,6 @@ config:
     #     - chart-example.local
 
   autoscaling:
-    maxReplicas: 5
     targetAverageUtilization: 50
 
 resources:
