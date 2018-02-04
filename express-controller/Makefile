@@ -15,6 +15,9 @@ $(GOPATH)/src/express-controller:
 build:
 	go build -o ./bin/express-controller ./express-controller
 
+test:
+	go test ./...
+
 subprojs:
 	@for proj in $(SUBPROJECTS); \
         do \
